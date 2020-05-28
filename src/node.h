@@ -4,17 +4,6 @@
 #include "symbol.h"
 
 class CodeGenContext;
-class NDecl;
-class NExpr;
-class NVarDecl;
-class NFieldExpr;
-class NFieldType;
-
-typedef std::vector<NDecl *> NDeclList;
-typedef std::vector<NExpr *> NExprList;
-typedef std::vector<NVarDecl *> NVarList;
-typedef std::vector<NFieldExpr *> NFieldExprList;
-typedef std::vector<NFieldType *> NFieldTypeList;
 
 class Node
 {
@@ -29,32 +18,74 @@ class NExpr : public Node
 {
 };
 
+class NExprList : public Node
+{
+public:
+	NExpr &head;
+	NExprList &next;
+
+	NExprList(int line, int index, NExpr &head, NExpr &next)
+		: line(line), index(index), head(head), next(next) {}
+	virtual llvm::Value *codeGen(CodeGenContext &context);
+};
+
 class NDecl : public Node
 {
+};
+
+class NDeclList : public Node
+{
+public:
+	NDecl &head;
+	NDeclList &next;
+
+	NDeclList(int line, int index, NExpr &head, NExpr &next)
+		: line(line), index(index), head(head), next(next) {}
+	virtual llvm::Value *codeGen(CodeGenContext &context);
 };
 
 class NVar : public Node
 {
 };
 
+class NVarList : public Node
+{
+public:
+	NVar &head;
+	NVarList &next;
+
+	NVarList(int line, int index, NExpr &head, NExpr &next)
+		: line(line), index(index), head(head), next(next) {}
+	virtual llvm::Value *codeGen(CodeGenContext &context);
+};
+
 class NType : public Node
 {
 };
 
-class NFieldType : public NType // (Node?)
+class NFieldTypeList : public Node
 {
+public:
+	Symbol &id;
+	Symbol &type;
+	NFieldTypeList &next;
+	NFieldTypeList(int line, int index, Symbol &id, Symbol &type, NFieldTypeList &next)
+		: line(line), index(index), id(id), type(type), next(next) {}
+	virtual llvm::Value *codeGen(CodeGenContext &context);
 };
 
-/* 	Expressions	 */
-class NFieldExpr : public NExpr
+class NFieldExprList : public Node
 {
 public:
 	Symbol &id;
 	NExpr &initValue;
-	NFieldExpr(int line, int index, Symbol &id, NExpr &initValue)
-		: line(line), index(index), id(id), initValue(initValue) {}
+	NFieldExprList &next;
+	NFieldExprList(int line, int index, Symbol &id, NExpr &initValue, NFieldExprList &next)
+		: line(line), index(index), id(id), initValue(initValue), next(next) {}
 	virtual llvm::Value *codeGen(CodeGenContext &context);
 };
+
+/* 	Expressions	 */
 
 class NStrExpr : public NExpr
 {
@@ -65,7 +96,7 @@ public:
 	virtual llvm::Value *codeGen(CodeGenContext &context);
 };
 
-class NIntExpr
+class NIntExpr : public NExpr
 {
 public:
 	long long value;
@@ -74,14 +105,14 @@ public:
 	virtual llvm::Value *codeGen(CodeGenContext &context);
 };
 
-class NNilExpr
+class NNilExpr : public NExpr
 {
 public:
 	NNilExpr(int line, int index) : line(line), index(index) {}
 	virtual llvm::Value *codeGen(CodeGenContext &context);
 };
 
-class NOpExpr
+class NOpExpr : public NExpr
 {
 public:
 	NExpr &lhs;
@@ -95,43 +126,46 @@ public:
 	const static int PLUS = 0, MINUS = 1, MUL = 2, DIV = 3, EQ = 4, NE = 5, LT = 6, LE = 7, GT = 8, GE = 9;
 };
 
-class NAssignExpr
+class NAssignExpr : public NExpr
 {
 public:
-	NExpr &lhs;
+	NVar &var;
 	NExpr &rhs;
-	int op;
-	NAssignExpr(int line, int index, NExpr &lhs, int op, NExpr &rhs)
-		: line(line), index(index), lhs(lhs), op(op), rhs(rhs) {}
+
+	NAssignExpr(int line, int index, NVar &var, NExpr &rhs)
+		: line(line), index(index), var(var), rhs(rhs) {}
 	virtual llvm::Value *codeGen(CodeGenContext &context);
 };
 
-class NRecordExpr
+class NRecordExpr : public NExpr
 {
 public:
 	Symbol &type;
 	NFieldExprList &fields;
+
 	NRecordExpr(int line, int index, Symbol &type, NFieldExprList &fields)
 		: line(line), index(index), type(type), fields(fields) {}
 	virtual llvm::Value *codeGen(CodeGenContext &context);
 };
 
-class NArrayExpr
+class NArrayExpr : public NExpr
 {
 public:
 	Symbol &type;
 	NExpr &size;
 	NExpr &initValue;
+
 	NArrayExpr(int line, int index, Symbol &type, NExpr &size, NExpr &initValue)
 		: line(line), index(index), type(type), size(size), initValue(initValue) {}
 	virtual llvm::Value *codeGen(CodeGenContext &context);
 };
 
-class NCallExpr
+class NCallExpr : public NExpr
 {
 public:
 	const Symbol &func;
-	NExprList &args;
+	NExprList &args; // opt
+
 	NCallExpr(int line, int index, cosnt Symbol &func, NExprList &args)
 		: line(line), index(index), func(func), args(args) {}
 	NCallExpr(int line, int index, cosnt Symbol &func)
@@ -139,10 +173,11 @@ public:
 	virtual llvm::Value *codeGen(CodeGenContext &context);
 };
 
-class NSeqExpr
+class NSeqExpr : public NExpr
 {
 public:
 	NExprlist &exprs;
+
 	NSeqExpr(int line, int index, NExprList &exprs)
 		: line(line), index(index), exprs(exprs) {}
 	virtual llvm::Value *codeGen(CodeGenContext &context);
@@ -154,6 +189,7 @@ public:
 	NExpr &test;
 	NExpr &thenClause;
 	NExpr &elseClause;
+
 	NIfExpr(int line, int index, NExpr &test, NExpr &thencls, NExpr &elsecls)
 		: line(line), index(index), test(test), thenClause(thencls), elseClause(elsecls) {}
 	NIfExpr(int line, int index, NExpr &test, NExpr &thencls)
@@ -166,6 +202,7 @@ class NWhileExpr : public NExpr
 public:
 	NExpr &test;
 	NExpr &body;
+
 	NWhileExpr(int line, int index, NExpr &test, NExpr &body)
 		: line(line), index(index), test(test), body(body) {}
 	virtual llvm::Value *codeGen(CodeGenContext &context);
@@ -196,24 +233,27 @@ class NLetExpr : public NExpr
 public:
 	NDeclList &decls;
 	NExpr &body;
+
 	NLetExpr(int line, int index, NDeclList &decls, NExpr &body)
 		: line(line), index(index), decls(decls), body(body) {}
 	virtual llvm::Value *codeGen(CodeGenContext &context);
 };
 
 /* Declarations */
+
 class NFuncDecl : public NDecl
 {
 public:
 	Symbol &id;
 	NFieldTypeList &params;
 	NExpr &body;
-	NNameType &retType;
+	NNameType &retType; // opt
+	NFuncDecl &next;	// opt
 
+	NFuncDecl(int line, int index, Symbol &id, NFieldTypeList &params, NExpr &body, NNameType &retType, NFuncDecl &next)
+		: line(line), index(index), id(id), params(params), body(body), retType(retType), next(next) {}
 	NFuncDecl(int line, int index, Symbol &id, NFieldTypeList &params, NExpr &body, NNameType &retType)
-		: line(line), index(index), id(id), params(params), body(body), retType(retType) {}
-	NFuncDecl(int line, int index, Symbol &id, NFieldTypeList &params, NExpr &body)
-		: line(line), index(index), id(id), params(params), body(body) { retType = NULL; }
+		: line(line), index(index), id(id), params(params), body(body), retType(retType) { next = NULL; }
 	virtual llvm::Value *codeGen(CodeGenContext &context);
 }
 
@@ -250,6 +290,7 @@ class NArrayType : public NType
 {
 public:
 	Symbol &id;
+
 	NArrayType(int line, int index, Symbol &id)
 		: line(line), index(index), id(id) {}
 	virtual llvm::Value *codeGen(CodeGenContext &context);
@@ -260,6 +301,7 @@ class NRecordType : public NType
 {
 public:
 	NFieldTypeList &fields;
+
 	NRecordType(int line, int index, NFieldTypeList &fields)
 		: line(line), index(index), fields(fields) {}
 	virtual llvm::Value *codeGen(CodeGenContext &context);
@@ -269,16 +311,19 @@ class NNameType : public NType
 {
 public:
 	Symbol &id;
+
 	NNameType(int line, int index, Symbol &id)
 		: line(line), index(index), id(id) {}
 	virtual llvm::Value *codeGen(CodeGenContext &context);
 }
 
 /* Variables */
+
 class NSimpleVar : public NVar
 {
 public:
 	Symbol &id;
+
 	NSimpleVar(int line, int index, Symbol &id)
 		: line(line), index(index), id(id) {}
 	virtual llvm::Value *codeGen(CodeGenContext &context);
@@ -289,6 +334,7 @@ class NFieldVar : public NVar
 public:
 	NVar &var;
 	Symbol &id;
+
 	NFieldVar(int line, int index, NVar &var, Symbol &id)
 		: line(line), index(index), var(var), id(id) {}
 	virtual llvm::Value *codeGen(CodeGenContext &context);
@@ -299,6 +345,7 @@ class NSubscriptVar : public NVar
 public:
 	NVar &var;
 	NExpr &index;
+
 	NSubscriptVar(int line, int index, NVar &var, NExpr &index)
 		: line(line), index(index), var(var), index(index) {}
 	virtual llvm::Value *codeGen(CodeGenContext &context);
