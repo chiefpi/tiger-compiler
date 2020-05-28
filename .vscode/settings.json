@@ -1,8 +1,0 @@
-{
-    "files.associations": {
-        "*.h": "cpp",
-        "*.fg": "hlsl",
-        "*.vt": "glsl",
-        "concepts": "cpp"
-    }
-}
