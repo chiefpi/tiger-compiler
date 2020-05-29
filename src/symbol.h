@@ -23,4 +23,13 @@ public:
         dict.insert({s, sym});
         return sym;
     }
+    void print(int depth) const
+    {
+        for (int i = 0; i < depth; i++)
+            cout << "	";
+        cout << "<id>" << endl;
+        for (int i = 0; i < depth + 1; i++)
+            cout << "	";
+        cout << id << endl;
+    }
 };
