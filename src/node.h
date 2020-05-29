@@ -262,9 +262,12 @@ class NTypeDecl : public NDecl
 public:
 	Symbol &id;
 	NType &type;
+	NTypeDecl &next;
 
+	NTypeDecl(int line, int index, Symbol &id, NType &type, NTypeDecl &next)
+		: line(line), index(index), id(id), type(type), next(next) {}
 	NTypeDecl(int line, int index, Symbol &id, NType &type)
-		: line(line), index(index), id(id), type(type) {}
+		: line(line), index(index), id(id), type(type) { next = NULL; }
 	virtual llvm::Value *codeGen(CodeGenContext &context);
 }
 
