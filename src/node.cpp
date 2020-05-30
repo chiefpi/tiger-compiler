@@ -73,6 +73,14 @@ void NNilExpr::print(int depth) const
     cout << "nil" << endl;
 }
 
+void NVarExpr::print(int depth) const
+{
+    printIndent(depth);
+    cout << "<VarExpr>" << endl;
+    printIndent(depth + 1);
+    var.print(depth + 1);
+}
+
 void NOpExpr::print(int depth) const
 {
     static string op_name[10] =
@@ -175,7 +183,7 @@ void NFuncDecl::print(int depth) const
     params->print(depth + 1);
     body->print(depth + 1);
     if (retType != NULL)
-        retType-?print(depth + 1);
+        retType - ? print(depth + 1);
     if (next != NULL)
         next->print(depth + 1);
 }

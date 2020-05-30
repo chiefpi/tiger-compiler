@@ -14,10 +14,6 @@ private:
 public:
     Symbol() {}
     Symbol(string s) : id(s) {}
-    Symbol symbol(string s)
-    {
-        return Symbol(s);
-    }
     void print(int depth) const
     {
         for (int i = 0; i < depth; i++)
