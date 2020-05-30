@@ -1,6 +1,4 @@
-#ifndef NODE_H
-#define NODE_H
-#endif
+#pragma once
 
 #include <iostream>
 #include <vector>
@@ -42,7 +40,6 @@ class NVar;
 class NVarDecl;
 class NVarList;
 class NWhileExpr;
-
 
 class Node
 {
@@ -197,6 +194,19 @@ public:
 	virtual void print(int depth) const;
 };
 
+class NVarExpr : public NExpr
+{
+public:
+	NVar *var;
+	NVarExpr(int line, int index, NVar *var) : var(var)
+	{
+		line = line;
+		index = index;
+	}
+	virtual llvm::Value *codeGen(CodeGenContext &context);
+	virtual void print(int depth) const;
+}
+
 class NOpExpr : public NExpr
 {
 public:
@@ -343,7 +353,6 @@ public:
 	virtual void print(int depth) const;
 };
 
-
 class NForExpr : public NExpr
 {
 public:
@@ -388,7 +397,6 @@ public:
 	virtual llvm::Value *codeGen(CodeGenContext &context);
 	virtual void print(int depth) const;
 };
-
 
 /* Declarations */
 
