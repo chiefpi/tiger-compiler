@@ -2,7 +2,7 @@
 
 #include <iostream>
 #include <vector>
-#include <llvm/IR/Value.h>
+// #include <llvm/IR/Value.h>
 #include "symbol.h"
 
 class CodeGenContext;
@@ -37,7 +37,6 @@ class NSubscriptVar;
 class NType;
 class NTypeDecl;
 class NVar;
-class NVarExpr;
 class NVarDecl;
 class NVarList;
 class NWhileExpr;
@@ -48,7 +47,7 @@ public:
 	int line;
 	int index;
 	virtual ~Node() {}
-	virtual llvm::Value *codeGen(CodeGenContext &context) { return NULL; }
+	// virtual llvm::Value *codeGen(CodeGenContext &context) { return NULL; }
 	virtual void print(int depth = 0) const = 0;
 	void printIndent(int d) const
 	{
@@ -73,7 +72,7 @@ public:
 		line = line;
 		index = index;
 	}
-	virtual llvm::Value *codeGen(CodeGenContext &context);
+	// virtual llvm::Value *codeGen(CodeGenContext &context);
 	virtual void print(int depth) const;
 };
 
@@ -93,7 +92,7 @@ public:
 		line = line;
 		index = index;
 	}
-	virtual llvm::Value *codeGen(CodeGenContext &context);
+	// virtual llvm::Value *codeGen(CodeGenContext &context);
 	virtual void print(int depth) const;
 };
 
@@ -113,7 +112,7 @@ public:
 		line = line;
 		index = index;
 	}
-	virtual llvm::Value *codeGen(CodeGenContext &context);
+	// virtual llvm::Value *codeGen(CodeGenContext &context);
 	virtual void print(int depth) const;
 };
 
@@ -133,7 +132,7 @@ public:
 		line = line;
 		index = index;
 	}
-	virtual llvm::Value *codeGen(CodeGenContext &context);
+	// virtual llvm::Value *codeGen(CodeGenContext &context);
 	virtual void print(int depth) const;
 };
 
@@ -149,7 +148,7 @@ public:
 		line = line;
 		index = index;
 	}
-	virtual llvm::Value *codeGen(CodeGenContext &context);
+	// virtual llvm::Value *codeGen(CodeGenContext &context);
 	virtual void print(int depth) const;
 };
 
@@ -165,7 +164,7 @@ public:
 		line = line;
 		index = index;
 	}
-	virtual llvm::Value *codeGen(CodeGenContext &context);
+	// virtual llvm::Value *codeGen(CodeGenContext &context);
 	virtual void print(int depth) const;
 };
 
@@ -179,7 +178,7 @@ public:
 		line = line;
 		index = index;
 	}
-	virtual llvm::Value *codeGen(CodeGenContext &context);
+	// virtual llvm::Value *codeGen(CodeGenContext &context);
 	virtual void print(int depth) const;
 };
 
@@ -191,7 +190,7 @@ public:
 		line = line;
 		index = index;
 	}
-	virtual llvm::Value *codeGen(CodeGenContext &context);
+	// virtual llvm::Value *codeGen(CodeGenContext &context);
 	virtual void print(int depth) const;
 };
 
@@ -204,9 +203,9 @@ public:
 		line = line;
 		index = index;
 	}
-	virtual llvm::Value *codeGen(CodeGenContext &context);
+	// virtual llvm::Value *codeGen(CodeGenContext &context);
 	virtual void print(int depth) const;
-}
+};
 
 class NOpExpr : public NExpr
 {
@@ -221,7 +220,7 @@ public:
 		line = line;
 		index = index;
 	}
-	virtual llvm::Value *codeGen(CodeGenContext &context);
+	// virtual llvm::Value *codeGen(CodeGenContext &context);
 
 	const static int PLUS = 0, MINUS = 1, MUL = 2, DIV = 3, EQ = 4, NE = 5, LT = 6, LE = 7, GT = 8, GE = 9;
 	virtual void print(int depth) const;
@@ -239,7 +238,7 @@ public:
 		line = line;
 		index = index;
 	}
-	virtual llvm::Value *codeGen(CodeGenContext &context);
+	// virtual llvm::Value *codeGen(CodeGenContext &context);
 	virtual void print(int depth) const;
 };
 
@@ -255,7 +254,7 @@ public:
 		line = line;
 		index = index;
 	}
-	virtual llvm::Value *codeGen(CodeGenContext &context);
+	// virtual llvm::Value *codeGen(CodeGenContext &context);
 	virtual void print(int depth) const;
 };
 
@@ -272,7 +271,7 @@ public:
 		line = line;
 		index = index;
 	}
-	virtual llvm::Value *codeGen(CodeGenContext &context);
+	// virtual llvm::Value *codeGen(CodeGenContext &context);
 	virtual void print(int depth) const;
 };
 
@@ -295,7 +294,7 @@ public:
 		index = index;
 		args = NULL;
 	}
-	virtual llvm::Value *codeGen(CodeGenContext &context);
+	// virtual llvm::Value *codeGen(CodeGenContext &context);
 	virtual void print(int depth) const;
 };
 
@@ -310,7 +309,7 @@ public:
 		line = line;
 		index = index;
 	}
-	virtual llvm::Value *codeGen(CodeGenContext &context);
+	// virtual llvm::Value *codeGen(CodeGenContext &context);
 	virtual void print(int depth) const;
 };
 
@@ -334,7 +333,7 @@ public:
 		index = index;
 		elseClause = NULL;
 	}
-	virtual llvm::Value *codeGen(CodeGenContext &context);
+	// virtual llvm::Value *codeGen(CodeGenContext &context);
 	virtual void print(int depth) const;
 };
 
@@ -350,7 +349,7 @@ public:
 		line = line;
 		index = index;
 	}
-	virtual llvm::Value *codeGen(CodeGenContext &context);
+	// virtual llvm::Value *codeGen(CodeGenContext &context);
 	virtual void print(int depth) const;
 };
 
@@ -367,7 +366,7 @@ public:
 		line = line;
 		index = index;
 	}
-	virtual llvm::Value *codeGen(CodeGenContext &context);
+	// virtual llvm::Value *codeGen(CodeGenContext &context);
 	virtual void print(int depth) const;
 };
 
@@ -379,7 +378,7 @@ public:
 		line = line;
 		index = index;
 	}
-	virtual llvm::Value *codeGen(CodeGenContext &context);
+	// virtual llvm::Value *codeGen(CodeGenContext &context);
 	virtual void print(int depth) const;
 };
 
@@ -387,15 +386,15 @@ class NLetExpr : public NExpr
 {
 public:
 	NDeclList *decls;
-	NExpr *body;
+	NExprList *body;
 
-	NLetExpr(int line, int index, NDeclList *decls, NExpr *body)
+	NLetExpr(int line, int index, NDeclList *decls, NExprList *body)
 		: decls(decls), body(body)
 	{
 		line = line;
 		index = index;
 	}
-	virtual llvm::Value *codeGen(CodeGenContext &context);
+	// virtual llvm::Value *codeGen(CodeGenContext &context);
 	virtual void print(int depth) const;
 };
 
@@ -423,7 +422,7 @@ public:
 		index = index;
 		next = NULL;
 	}
-	virtual llvm::Value *codeGen(CodeGenContext &context);
+	// virtual llvm::Value *codeGen(CodeGenContext &context);
 	virtual void print(int depth) const;
 };
 
@@ -447,7 +446,7 @@ public:
 		index = index;
 		next = NULL;
 	}
-	virtual llvm::Value *codeGen(CodeGenContext &context);
+	// virtual llvm::Value *codeGen(CodeGenContext &context);
 	virtual void print(int depth) const;
 };
 
@@ -473,7 +472,7 @@ public:
 		type = NULL;
 	}
 
-	virtual llvm::Value *codeGen(CodeGenContext &context);
+	// virtual llvm::Value *codeGen(CodeGenContext &context);
 	virtual void print(int depth) const;
 };
 
@@ -490,7 +489,7 @@ public:
 		line = line;
 		index = index;
 	}
-	virtual llvm::Value *codeGen(CodeGenContext &context);
+	// virtual llvm::Value *codeGen(CodeGenContext &context);
 	virtual void print(int depth) const;
 };
 
@@ -505,7 +504,7 @@ public:
 		line = line;
 		index = index;
 	}
-	virtual llvm::Value *codeGen(CodeGenContext &context);
+	// virtual llvm::Value *codeGen(CodeGenContext &context);
 	virtual void print(int depth) const;
 };
 
@@ -520,7 +519,7 @@ public:
 		line = line;
 		index = index;
 	}
-	virtual llvm::Value *codeGen(CodeGenContext &context);
+	// virtual llvm::Value *codeGen(CodeGenContext &context);
 	virtual void print(int depth) const;
 };
 
@@ -537,7 +536,7 @@ public:
 		line = line;
 		index = index;
 	}
-	virtual llvm::Value *codeGen(CodeGenContext &context);
+	// virtual llvm::Value *codeGen(CodeGenContext &context);
 	virtual void print(int depth) const;
 };
 
@@ -553,7 +552,7 @@ public:
 		line = line;
 		index = index;
 	}
-	virtual llvm::Value *codeGen(CodeGenContext &context);
+	// virtual llvm::Value *codeGen(CodeGenContext &context);
 	virtual void print(int depth) const;
 };
 
@@ -569,6 +568,6 @@ public:
 		line = line;
 		index = index;
 	}
-	virtual llvm::Value *codeGen(CodeGenContext &context);
+	// virtual llvm::Value *codeGen(CodeGenContext &context);
 	virtual void print(int depth) const;
 };
