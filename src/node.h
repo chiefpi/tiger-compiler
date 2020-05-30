@@ -37,6 +37,7 @@ class NSubscriptVar;
 class NType;
 class NTypeDecl;
 class NVar;
+class NVarExpr;
 class NVarDecl;
 class NVarList;
 class NWhileExpr;
@@ -123,10 +124,10 @@ class NType : public Node
 class NFieldTypeList : public Node
 {
 public:
-	Symbol &id;
-	Symbol &type;
+	Symbol *id;
+	Symbol *type;
 	NFieldTypeList *next;
-	NFieldTypeList(int line, int index, Symbol &id, Symbol &type, NFieldTypeList *next)
+	NFieldTypeList(int line, int index, Symbol *id, Symbol *type, NFieldTypeList *next)
 		: id(id), type(type), next(next)
 	{
 		line = line;
@@ -139,10 +140,10 @@ public:
 class NFieldExprList : public Node
 {
 public:
-	Symbol &id;
+	Symbol *id;
 	NExpr *initValue;
 	NFieldExprList *next;
-	NFieldExprList(int line, int index, Symbol &id, NExpr *initValue, NFieldExprList *next)
+	NFieldExprList(int line, int index, Symbol *id, NExpr *initValue, NFieldExprList *next)
 		: id(id), initValue(initValue), next(next)
 	{
 		line = line;
@@ -245,10 +246,10 @@ public:
 class NRecordExpr : public NExpr
 {
 public:
-	Symbol &type;
+	Symbol *type;
 	NFieldExprList *fields;
 
-	NRecordExpr(int line, int index, Symbol &type, NFieldExprList *fields)
+	NRecordExpr(int line, int index, Symbol *type, NFieldExprList *fields)
 		: type(type), fields(fields)
 	{
 		line = line;
@@ -261,11 +262,11 @@ public:
 class NArrayExpr : public NExpr
 {
 public:
-	Symbol &type;
+	Symbol *type;
 	NExpr *size;
 	NExpr *initValue;
 
-	NArrayExpr(int line, int index, Symbol &type, NExpr *size, NExpr *initValue)
+	NArrayExpr(int line, int index, Symbol *type, NExpr *size, NExpr *initValue)
 		: type(type), size(size), initValue(initValue)
 	{
 		line = line;
@@ -278,16 +279,16 @@ public:
 class NCallExpr : public NExpr
 {
 public:
-	Symbol &func;
+	Symbol *func;
 	NExprList *args; // opt
 
-	NCallExpr(int line, int index, Symbol &func, NExprList *args)
+	NCallExpr(int line, int index, Symbol *func, NExprList *args)
 		: func(func), args(args)
 	{
 		line = line;
 		index = index;
 	}
-	NCallExpr(int line, int index, Symbol &func)
+	NCallExpr(int line, int index, Symbol *func)
 		: func(func)
 	{
 		line = line;
@@ -403,19 +404,19 @@ public:
 class NFuncDecl : public NDecl
 {
 public:
-	Symbol &id;
+	Symbol *id;
 	NFieldTypeList *params;
 	NExpr *body;
 	NNameType *retType; // opt
 	NFuncDecl *next;	// opt
 
-	NFuncDecl(int line, int index, Symbol &id, NFieldTypeList *params, NExpr *body, NNameType *retType, NFuncDecl *next)
+	NFuncDecl(int line, int index, Symbol *id, NFieldTypeList *params, NExpr *body, NNameType *retType, NFuncDecl *next)
 		: id(id), params(params), body(body), retType(retType), next(next)
 	{
 		line = line;
 		index = index;
 	}
-	NFuncDecl(int line, int index, Symbol &id, NFieldTypeList *params, NExpr *body, NNameType *retType)
+	NFuncDecl(int line, int index, Symbol *id, NFieldTypeList *params, NExpr *body, NNameType *retType)
 		: id(id), params(params), body(body), retType(retType)
 	{
 		line = line;
@@ -429,17 +430,17 @@ public:
 class NTypeDecl : public NDecl
 {
 public:
-	Symbol &id;
+	Symbol *id;
 	NType *type;
 	NTypeDecl *next; // opt
 
-	NTypeDecl(int line, int index, Symbol &id, NType *type, NTypeDecl *next)
+	NTypeDecl(int line, int index, Symbol *id, NType *type, NTypeDecl *next)
 		: id(id), type(type), next(next)
 	{
 		line = line;
 		index = index;
 	}
-	NTypeDecl(int line, int index, Symbol &id, NType *type)
+	NTypeDecl(int line, int index, Symbol *id, NType *type)
 		: id(id), type(type)
 	{
 		line = line;
@@ -453,18 +454,18 @@ public:
 class NVarDecl : public NDecl
 {
 public:
-	Symbol &id;
+	Symbol *id;
 	NExpr *initValue;
 	NType *type; // opt
 	// boolean escape = true;
 
-	NVarDecl(int line, int index, Symbol &id, NExpr *initValue, NType *type)
+	NVarDecl(int line, int index, Symbol *id, NExpr *initValue, NType *type)
 		: id(id), initValue(initValue), type(type)
 	{
 		line = line;
 		index = index;
 	}
-	NVarDecl(int line, int index, Symbol &id, NExpr *initValue)
+	NVarDecl(int line, int index, Symbol *id, NExpr *initValue)
 		: id(id), initValue(initValue)
 	{
 		line = line;
@@ -481,9 +482,9 @@ public:
 class NArrayType : public NType
 {
 public:
-	Symbol &id;
+	Symbol *id;
 
-	NArrayType(int line, int index, Symbol &id)
+	NArrayType(int line, int index, Symbol *id)
 		: id(id)
 	{
 		line = line;
@@ -511,9 +512,9 @@ public:
 class NNameType : public NType
 {
 public:
-	Symbol &id;
+	Symbol *id;
 
-	NNameType(int line, int index, Symbol &id)
+	NNameType(int line, int index, Symbol *id)
 		: id(id)
 	{
 		line = line;
@@ -528,9 +529,9 @@ public:
 class NSimpleVar : public NVar
 {
 public:
-	Symbol &id;
+	Symbol *id;
 
-	NSimpleVar(int line, int index, Symbol &id)
+	NSimpleVar(int line, int index, Symbol *id)
 		: id(id)
 	{
 		line = line;
@@ -544,9 +545,9 @@ class NFieldVar : public NVar
 {
 public:
 	NVar *var;
-	Symbol &id;
+	Symbol *id;
 
-	NFieldVar(int line, int index, NVar *var, Symbol &id)
+	NFieldVar(int line, int index, NVar *var, Symbol *id)
 		: var(var), id(id)
 	{
 		line = line;
