@@ -34,7 +34,6 @@ void yyerror ( const char* s )
 	NFuncDecl* funclistType;
 	NType* typeType;
 	NVar* varType;
-	NFieldExpr* fieldType;
 	NFieldExprList* fieldlistType;
 	NFieldTypeList* typefieldsType;
 	int token;
@@ -55,7 +54,6 @@ void yyerror ( const char* s )
 %type <funclistType> funclist
 %type <typeType> type
 %type <varType> var
-%type <fieldType> field
 %type <fieldlistType> fieldlist
 %type <typefieldsType> typefields
 
@@ -65,7 +63,7 @@ void yyerror ( const char* s )
 
 %%
 
-program		: expr { root = new NExpr(); }
+program		: expr { root = $1; }
 			;
 
 expr	    : NIL { $$ = new NNilExpr(lineCount, index); }
