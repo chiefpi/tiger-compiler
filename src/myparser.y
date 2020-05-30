@@ -36,8 +36,7 @@ void yyerror ( const char* s )
 	NVar* varType;
 	NFieldExpr* fieldType;
 	NFieldExprList* fieldlistType;
-	NFieldTypeList* typefieldsType
-	
+	NFieldTypeList* typefieldsType;
 	int token;
 }
 
@@ -154,7 +153,7 @@ funclist	: funcdecl { $$ = $1; }
 funcdecl	: FUNCTION ID LPAREN RPAREN EQ expr { $$ = new NFuncDecl(lineCount, index, Symbol.symbol($2), NULL, NULL, $6, NULL); }
 			| FUNCTION ID LPAREN typefields RPAREN EQ expr { $$ = nnew NFuncDecl(lineCount, index, Symbol.symbol($2), $4, NULL, $7, NULL); }
 			| FUNCTION ID LPAREN RPAREN COLON ID EQ expr { $$ = new NFuncDecl(lineCount, index, Symbol.symbol($2), NULL, NNameType(lineCount, index, Symbol.symbol($6)), $8, NULL); }
-			| FUNCTION ID LPAREN typefields RPAREN COLON id EQ expr { $$ = new NFuncDecl(lineCount, index, Symbol.symbol($2), $4, NNameType(lineCount, index, Symbol.symbol($7)), $9, NULL); }
+			| FUNCTION ID LPAREN typefields RPAREN COLON ID EQ expr { $$ = new NFuncDecl(lineCount, index, Symbol.symbol($2), $4, NNameType(lineCount, index, Symbol.symbol($7)), $9, NULL); }
 			;
 
 

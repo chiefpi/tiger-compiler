@@ -2,7 +2,7 @@
 #include <iostream>
 #include <string>
 #include <cstdlib>
-#include "ast.h"
+#include "node.h"
 #include "y.tab.h"
 using namespace std;
 

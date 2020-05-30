@@ -10,6 +10,7 @@ private:
     static unordered_map<string, Symbol> dict;
 
 public:
+    Symbol() {}
     Symbol(string s) : id(s) {}
     Symbol symbol(string s)
     {
