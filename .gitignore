@@ -1,5 +1,7 @@
 .vscode
 *.o
+*.txt
+Makefile.old
 parser.cpp
 parser.hpp
 tokens.cpp
