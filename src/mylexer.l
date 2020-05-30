@@ -3,11 +3,11 @@
 #include <string>
 #include <cstdlib>
 #include "node.h"
-#include "y.tab.h"
+#include "myparser.hpp"
 using namespace std;
 
-extern int lineCount;
-extern int index;
+int lineCount;
+// extern int index;
 int yycolumn = 1;
 int commentCount = 0;
 void yyerror(const char *);
@@ -189,7 +189,7 @@ void yyerror(const char *);
             }
             else
             {
-                yyerror("Invalid")
+                yyerror("Invalid");
             }
         }
     }
@@ -207,7 +207,7 @@ void yyerror(const char *);
         yyerror("Identifier too long");
         return ERROR;
     }
-    return IDT;
+    return ID;
 }
 
 [0-9]+ {

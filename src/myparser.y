@@ -6,11 +6,13 @@
 #include "node.h"
 using namespace std;
 
+extern int yylex();
 extern int lineCount;
 extern int index;
 extern char *yytext;
-extern int status;
-extern NExpr* root;
+int status;
+NExpr* root;
+
 
 void yyerror ( const char* s ) 
 {
@@ -36,6 +38,7 @@ void yyerror ( const char* s )
 	NVar* varType;
 	NFieldExprList* fieldlistType;
 	NFieldTypeList* typefieldsType;
+	Symbol* idType;
 	int token;
 }
 
@@ -56,6 +59,7 @@ void yyerror ( const char* s )
 %type <varType> var
 %type <fieldlistType> fieldlist
 %type <typefieldsType> typefields
+%type <idType> id
 
 %nonassoc ASSIGN EQ NEQ LT LE GT GE UMINUS HIGHER_THAN_OP LOWER_THAN_ELSE
 %left OR AND PLUS MINUS TIMES DIVIDE DOT LPAREN
@@ -69,7 +73,7 @@ program		: expr { root = $1; }
 expr	    : NIL { $$ = new NNilExpr(lineCount, index); }
 			| INTEGERT { $$ = new NIntExpr(lineCount, index, atoi(yytext)); }
 			| STRINGT { string s = yytext; $$ = new NStrExpr(lineCount, index, s.substr(1, s.length()-2)); }
-			| var { $$ = $1; }
+			| var { $$ = new NVarExpr(lineCount, index, $1); }
 			| MINUS expr %prec UMINUS { $$ = new NOpExpr(lineCount, index, 0, 1, $2); }
 			| expr PLUS expr { $$ = new NOpExpr(lineCount, index, $1, 0, $3); }
 			| expr MINUS expr { $$ = new NOpExpr(lineCount, index, $1, 1, $3); }
@@ -82,24 +86,27 @@ expr	    : NIL { $$ = new NNilExpr(lineCount, index); }
 			| expr GT expr { $$ = new NOpExpr(lineCount, index, $1, 8, $3); }
 			| expr GE expr { $$ = new NOpExpr(lineCount, index, $1, 9, $3); }
 			| var ASSIGN expr { $$ = new NAssignExpr(lineCount, index, $1, $3); }
-			| ID LPAREN exprlist RPAREN { $$ = new NCallExpr(lineCount, index, Symbol.symbol($1), $3); }
-			| LPAREN exprseq RPAREN { $$ = new NExprList(lineCount, index, $2, NULL); }
-			| ID LBRACE fieldlist RBRACE { $$ = new NRecordExpr(lineCount, index, Symbol.symbol($1), $3); } 
-			| ID LBRACE RBRACE { $$ = new NRecordExpr(lineCount, index, Symbol.symbol($1), NULL); } 
-			| ID LBRACK expr RBRACK OF expr { $$ = new NArrayExpr(lineCount, index, Symbol.symbol($1), $3, $6); }
+			| id LPAREN exprlist RPAREN { $$ = new NCallExpr(lineCount, index, $1, $3); }
+			| LPAREN exprseq RPAREN { $$ = new NSeqExpr(lineCount, index, $2); }
+			| id LBRACE fieldlist RBRACE { $$ = new NRecordExpr(lineCount, index, $1, $3); } 
+			| id LBRACE RBRACE { $$ = new NRecordExpr(lineCount, index, $1, NULL); } 
+			| id LBRACK expr RBRACK OF expr { $$ = new NArrayExpr(lineCount, index, $1, $3, $6); }
 			| IF expr THEN expr { $$ = new NIfExpr(lineCount, index, $2, $4); }
 			| IF expr THEN expr ELSE expr { $$ = new NIfExpr(lineCount, index, $2, $4, $6); }
 			| WHILE expr DO expr { $$ = new NWhileExpr(lineCount, index, $2, $4); }
-			| FOR ID ASSIGN expr TO expr DO expr { $$ = new NForExpr(lineCount, index, NNameType(lineCount, index, Symbol.symbol($2)), $4, $6, $8); }
+			| FOR id ASSIGN expr TO expr DO expr { $$ = new NForExpr(lineCount, index, new NVarDecl(lineCount, index, $2, $4, new NNameType(lineCount, index, new Symbol("int"))), $6, $8); }
 			| BREAK { $$ = new NBreakExpr(lineCount, index); }
 			| LET decllist IN END { $$ = new NLetExpr(lineCount, index, $2, NULL); }
 			| LET decllist IN exprseq END { $$ = new NLetExpr(lineCount, index, $2, $4); } 
 			;
 
-var			: ID { $$ = new NSimpleVar(lineCount, index, Symbol.symbol($1)); }
-			| var DOT ID { $$ = new NFieldVar(lineCount, index, Symbol.symbol($1)); }
+id			: ID { $$ = new Symbol(string(yytext));}
+			;
+
+var			: id { $$ = new NSimpleVar(lineCount, index, $1); }
+			| var DOT id { $$ = new NFieldVar(lineCount, index, $1, $3); }
 			| var LBRACK expr RBRACK { $$ = new NSubscriptVar(lineCount, index, $1, $3); }
-			| ID LBRACK expr RBRACK { $$ = new NSubscriptVar(lineCount, index, $1, $3); }
+			| id LBRACK expr RBRACK { $$ = new NSubscriptVar(lineCount, index, new NSimpleVar(lineCount, index, $1), $3); }
 			;
 
 exprlist	: expr { $$ = new NExprList(lineCount, index, $1, NULL); }
@@ -110,8 +117,8 @@ exprseq		: expr { $$ = new NExprList(lineCount, index, $1, NULL); }
 			| expr SEMICOLON exprlist { $$ = new NExprList(lineCount, index, $1, $3); }
 			;
 
-fieldlist	: ID EQ expr { $$ = new NFieldExprList(lineCount, index, Symbol.symbol($1), $3, NULL); }
-			| ID EQ expr COMMA fieldlist { $$ = new NFieldExprList(lineCount, index, Symbol.symbol($1), $3, $5); }
+fieldlist	: id EQ expr { $$ = new NFieldExprList(lineCount, index, $1, $3, NULL); }
+			| id EQ expr COMMA fieldlist { $$ = new NFieldExprList(lineCount, index, $1, $3, $5); }
 			;
 
 decllist	: decl { $$ = new NDeclList(lineCount, index, $1, NULL); }
@@ -124,34 +131,34 @@ decl		: typelist { $$ = $1; }
 			;
 
 typelist	: typedecl { $$ = $1; }
-			| typedecl typelist { $$ = new NTypeDecl(lineCount, index, Symbol.symbol($1), $2); }
+			| typedecl typelist { $$ = new NTypeDecl(lineCount, index, $1->id, $1->type, $2); }
 			;
 
-typedecl	: TYPE ID EQ type { $$ = NTypeDecl(lineCount, index, Symbol.symbol($1), $2); }
+typedecl	: TYPE id EQ type { $$ = new NTypeDecl(lineCount, index, $2, $4); }
 			;
 
-type		: ID { $$ = NNameType(lineCount, index, Symbol.symbol($1)); }
+type		: id { $$ = new NNameType(lineCount, index, $1); }
 			| LBRACE typefields RBRACE { $$ = new NRecordType(lineCount, index, $2); }
 			| LBRACE RBRACE { $$ = new NRecordType(lineCount, index, NULL); }
-			| ARRAY OF ID { $$ = new NArrayType(lineCount, index, Symbol.symbol($3)); }
+			| ARRAY OF id { $$ = new NArrayType(lineCount, index, $3); }
 			; 
 
-typefields	: ID COLON ID { $$ = new NFieldTypeList(lineCount, index, Symbol.symbol($1), Symbol.symbol($3), null); }
-			| ID COLON ID COMMA typefields { $$ = new NFieldList(lineCount, index, Symbol.symbol($1), Symbol.symbol($3), $5); }
+typefields	: id COLON id { $$ = new NFieldTypeList(lineCount, index, $1, $3, NULL); }
+			| id COLON id COMMA typefields { $$ = new NFieldTypeList(lineCount, index, $1, $3, $5); }
 			;
 
-vardecl		:  VAR ID ASSIGN expr { $$ = new NVarDecl(lineCount, index, Symbol.symbol($2), $4); }
-			| VAR ID COLON ID ASSIGN expr { $$ = new NVarDecl(lineCount, index, Symbol.symbol($2), NNameType(lineCount, index, Symbol.symbol($4)), $6); }
+vardecl		:  VAR id ASSIGN expr { $$ = new NVarDecl(lineCount, index, $2, $4); }
+			| VAR id COLON id ASSIGN expr { $$ = new NVarDecl(lineCount, index, $2, $6, new NNameType(lineCount, index, $4)); }
 			;
 
 funclist	: funcdecl { $$ = $1; }
 			| funcdecl funclist { $$ = new NFuncDecl(lineCount, index, NULL, NULL, NULL, NULL, $2); }
 			;
 
-funcdecl	: FUNCTION ID LPAREN RPAREN EQ expr { $$ = new NFuncDecl(lineCount, index, Symbol.symbol($2), NULL, NULL, $6, NULL); }
-			| FUNCTION ID LPAREN typefields RPAREN EQ expr { $$ = nnew NFuncDecl(lineCount, index, Symbol.symbol($2), $4, NULL, $7, NULL); }
-			| FUNCTION ID LPAREN RPAREN COLON ID EQ expr { $$ = new NFuncDecl(lineCount, index, Symbol.symbol($2), NULL, NNameType(lineCount, index, Symbol.symbol($6)), $8, NULL); }
-			| FUNCTION ID LPAREN typefields RPAREN COLON ID EQ expr { $$ = new NFuncDecl(lineCount, index, Symbol.symbol($2), $4, NNameType(lineCount, index, Symbol.symbol($7)), $9, NULL); }
+funcdecl	: FUNCTION id LPAREN RPAREN EQ expr { $$ = new NFuncDecl(lineCount, index, $2, NULL, $6, NULL, NULL); }
+			| FUNCTION id LPAREN typefields RPAREN EQ expr { $$ = new NFuncDecl(lineCount, index, $2, $4, $7, NULL, NULL); }
+			| FUNCTION id LPAREN RPAREN COLON id EQ expr { $$ = new NFuncDecl(lineCount, index, $2, NULL, $8, new NNameType(lineCount, index, $6), NULL); }
+			| FUNCTION id LPAREN typefields RPAREN COLON id EQ expr { $$ = new NFuncDecl(lineCount, index, $2, $4, $9, new NNameType(lineCount, index, $7), NULL); }
 			;
 
 
