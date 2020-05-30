@@ -16,10 +16,10 @@ public:
     ~SymbolTable();
     T *findAll(Symbol const id);
     T *find(Symbol const id);
-    void push(Symbol const id, T* const value);
+    void push(Symbol const id, T *const value);
     void pop(Symbol const id);
     void enterScope();
-    void exitScope();
+    void quitScope();
     void resetScope();
 
 protected:
@@ -29,13 +29,13 @@ protected:
 template <typename T>
 SymbolTable<T>::SymbolTable()
 {
-    enter();
+    enterScope();
 }
 
 template <typename T>
 SymbolTable<T>::~SymbolTable()
 {
-    exit();
+    quitScope();
 }
 
 template <typename T>
@@ -56,7 +56,7 @@ T *SymbolTable<T>::find(const Symbol id)
 }
 
 template <typename T>
-void SymbolTable<T>::push(Symbol const id, T* const value)
+void SymbolTable<T>::push(Symbol const id, T *const value)
 {
     stack.front()[id] = value;
 }
@@ -74,7 +74,7 @@ void SymbolTable<T>::enterScope()
 }
 
 template <typename T>
-void SymbolTable<T>::exitScope()
+void SymbolTable<T>::quitScope()
 {
     stack.pop_front();
 }

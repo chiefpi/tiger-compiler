@@ -16,7 +16,7 @@ public:
     Kind kind;
     Type *type;
     vector<Type *> *paramTypes;
-    Entry(Kind kind, Type *type, vector<Type *> *pts) : kind(kind), type(type), paramTypes(pts) {}
+    Entry(Kind kind, Type *type, vector<Type *> *pts = NULL) : kind(kind), type(type), paramTypes(pts) {}
 };
 
 SymbolTable<Entry> initVarEnv()
