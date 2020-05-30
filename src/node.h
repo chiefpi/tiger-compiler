@@ -4,6 +4,7 @@
 #include <vector>
 #include <llvm/IR/Value.h>
 #include "symbol.h"
+#include "env.h"
 
 class CodeGenContext;
 
@@ -50,6 +51,7 @@ public:
 	virtual ~Node() {}
 	virtual llvm::Value *codeGen(CodeGenContext &context) { return NULL; }
 	virtual void print(int depth = 0) const = 0;
+	virtual Type traverse(VarEnv *VEnv, TypeEnv *TEnv) = 0;
 	void printIndent(int d) const
 	{
 		for (int i = 0; i < d; i++)
@@ -75,6 +77,7 @@ public:
 	}
 	virtual llvm::Value *codeGen(CodeGenContext &context);
 	virtual void print(int depth) const;
+	virtual Type traverse(VarEnv *VEnv, TypeEnv *TEnv);
 };
 
 class NDecl : public Node
@@ -95,6 +98,7 @@ public:
 	}
 	virtual llvm::Value *codeGen(CodeGenContext &context);
 	virtual void print(int depth) const;
+	virtual Type traverse(VarEnv *VEnv, TypeEnv *TEnv);
 };
 
 class NVar : public Node
@@ -115,6 +119,7 @@ public:
 	}
 	virtual llvm::Value *codeGen(CodeGenContext &context);
 	virtual void print(int depth) const;
+	virtual Type traverse(VarEnv *VEnv, TypeEnv *TEnv);
 };
 
 class NType : public Node
@@ -135,6 +140,7 @@ public:
 	}
 	virtual llvm::Value *codeGen(CodeGenContext &context);
 	virtual void print(int depth) const;
+	virtual Type traverse(VarEnv *VEnv, TypeEnv *TEnv);
 };
 
 class NFieldExprList : public Node
@@ -151,6 +157,7 @@ public:
 	}
 	virtual llvm::Value *codeGen(CodeGenContext &context);
 	virtual void print(int depth) const;
+	virtual Type traverse(VarEnv *VEnv, TypeEnv *TEnv);
 };
 
 /* 	Expressions	 */
@@ -167,6 +174,7 @@ public:
 	}
 	virtual llvm::Value *codeGen(CodeGenContext &context);
 	virtual void print(int depth) const;
+	virtual Type traverse(VarEnv *VEnv, TypeEnv *TEnv);
 };
 
 class NIntExpr : public NExpr
@@ -181,6 +189,7 @@ public:
 	}
 	virtual llvm::Value *codeGen(CodeGenContext &context);
 	virtual void print(int depth) const;
+	virtual Type traverse(VarEnv *VEnv, TypeEnv *TEnv);
 };
 
 class NNilExpr : public NExpr
@@ -193,20 +202,22 @@ public:
 	}
 	virtual llvm::Value *codeGen(CodeGenContext &context);
 	virtual void print(int depth) const;
+	virtual Type traverse(VarEnv *VEnv, TypeEnv *TEnv);
 };
 
 class NVarExpr : public NExpr
 {
 public:
-	NVar *var;
-	NVarExpr(int line, int index, NVar *var) : var(var)
+	NVar* var;
+	NVarExpr(int line, int index, NVar* var) : var(var)
 	{
 		line = line;
 		index = index;
 	}
-	virtual llvm::Value *codeGen(CodeGenContext &context);
+	virtual llvm::Value* codeGen(CodeGenContext& context);
 	virtual void print(int depth) const;
-}
+	virtual Type traverse(VarEnv* VEnv, TypeEnv* TEnv);
+};
 
 class NOpExpr : public NExpr
 {
@@ -225,6 +236,7 @@ public:
 
 	const static int PLUS = 0, MINUS = 1, MUL = 2, DIV = 3, EQ = 4, NE = 5, LT = 6, LE = 7, GT = 8, GE = 9;
 	virtual void print(int depth) const;
+	virtual Type traverse(VarEnv *VEnv, TypeEnv *TEnv);
 };
 
 class NAssignExpr : public NExpr
@@ -241,6 +253,7 @@ public:
 	}
 	virtual llvm::Value *codeGen(CodeGenContext &context);
 	virtual void print(int depth) const;
+	virtual Type traverse(VarEnv *VEnv, TypeEnv *TEnv);
 };
 
 class NRecordExpr : public NExpr
@@ -257,6 +270,7 @@ public:
 	}
 	virtual llvm::Value *codeGen(CodeGenContext &context);
 	virtual void print(int depth) const;
+	virtual Type traverse(VarEnv *VEnv, TypeEnv *TEnv);
 };
 
 class NArrayExpr : public NExpr
@@ -274,6 +288,7 @@ public:
 	}
 	virtual llvm::Value *codeGen(CodeGenContext &context);
 	virtual void print(int depth) const;
+	virtual Type traverse(VarEnv *VEnv, TypeEnv *TEnv);
 };
 
 class NCallExpr : public NExpr
@@ -297,6 +312,7 @@ public:
 	}
 	virtual llvm::Value *codeGen(CodeGenContext &context);
 	virtual void print(int depth) const;
+	virtual Type traverse(VarEnv *VEnv, TypeEnv *TEnv);
 };
 
 class NSeqExpr : public NExpr
@@ -312,6 +328,7 @@ public:
 	}
 	virtual llvm::Value *codeGen(CodeGenContext &context);
 	virtual void print(int depth) const;
+	virtual Type traverse(VarEnv *VEnv, TypeEnv *TEnv);
 };
 
 class NIfExpr : public NExpr
@@ -336,6 +353,7 @@ public:
 	}
 	virtual llvm::Value *codeGen(CodeGenContext &context);
 	virtual void print(int depth) const;
+	virtual Type traverse(VarEnv *VEnv, TypeEnv *TEnv);
 };
 
 class NWhileExpr : public NExpr
@@ -352,6 +370,7 @@ public:
 	}
 	virtual llvm::Value *codeGen(CodeGenContext &context);
 	virtual void print(int depth) const;
+	virtual Type traverse(VarEnv *VEnv, TypeEnv *TEnv);
 };
 
 class NForExpr : public NExpr
@@ -369,6 +388,7 @@ public:
 	}
 	virtual llvm::Value *codeGen(CodeGenContext &context);
 	virtual void print(int depth) const;
+	virtual Type traverse(VarEnv *VEnv, TypeEnv *TEnv);
 };
 
 class NBreakExpr : public NExpr
@@ -381,6 +401,7 @@ public:
 	}
 	virtual llvm::Value *codeGen(CodeGenContext &context);
 	virtual void print(int depth) const;
+	virtual Type traverse(VarEnv *VEnv, TypeEnv *TEnv);
 };
 
 class NLetExpr : public NExpr
@@ -397,6 +418,7 @@ public:
 	}
 	virtual llvm::Value *codeGen(CodeGenContext &context);
 	virtual void print(int depth) const;
+	virtual Type traverse(VarEnv *VEnv, TypeEnv *TEnv);
 };
 
 /* Declarations */
@@ -425,6 +447,7 @@ public:
 	}
 	virtual llvm::Value *codeGen(CodeGenContext &context);
 	virtual void print(int depth) const;
+	virtual Type traverse(VarEnv *VEnv, TypeEnv *TEnv);
 };
 
 class NTypeDecl : public NDecl
@@ -449,6 +472,7 @@ public:
 	}
 	virtual llvm::Value *codeGen(CodeGenContext &context);
 	virtual void print(int depth) const;
+	virtual Type traverse(VarEnv *VEnv, TypeEnv *TEnv);
 };
 
 class NVarDecl : public NDecl
@@ -475,6 +499,7 @@ public:
 
 	virtual llvm::Value *codeGen(CodeGenContext &context);
 	virtual void print(int depth) const;
+	virtual Type traverse(VarEnv *VEnv, TypeEnv *TEnv);
 };
 
 /* Types */
@@ -492,6 +517,7 @@ public:
 	}
 	virtual llvm::Value *codeGen(CodeGenContext &context);
 	virtual void print(int depth) const;
+	virtual Type traverse(VarEnv *VEnv, TypeEnv *TEnv);
 };
 
 class NRecordType : public NType
@@ -507,6 +533,7 @@ public:
 	}
 	virtual llvm::Value *codeGen(CodeGenContext &context);
 	virtual void print(int depth) const;
+	virtual Type traverse(VarEnv *VEnv, TypeEnv *TEnv);
 };
 
 class NNameType : public NType
@@ -522,6 +549,7 @@ public:
 	}
 	virtual llvm::Value *codeGen(CodeGenContext &context);
 	virtual void print(int depth) const;
+	virtual Type traverse(VarEnv *VEnv, TypeEnv *TEnv);
 };
 
 /* Variables */
@@ -539,6 +567,7 @@ public:
 	}
 	virtual llvm::Value *codeGen(CodeGenContext &context);
 	virtual void print(int depth) const;
+	virtual Type traverse(VarEnv *VEnv, TypeEnv *TEnv);
 };
 
 class NFieldVar : public NVar
@@ -555,6 +584,7 @@ public:
 	}
 	virtual llvm::Value *codeGen(CodeGenContext &context);
 	virtual void print(int depth) const;
+	virtual Type traverse(VarEnv *VEnv, TypeEnv *TEnv);
 };
 
 class NSubscriptVar : public NVar
@@ -571,4 +601,5 @@ public:
 	}
 	virtual llvm::Value *codeGen(CodeGenContext &context);
 	virtual void print(int depth) const;
+	virtual Type traverse(VarEnv *VEnv, TypeEnv *TEnv);
 };

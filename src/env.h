@@ -19,10 +19,13 @@ public:
     Entry(Kind kind, Type *type, vector<Type *> *pts = NULL) : kind(kind), type(type), paramTypes(pts) {}
 };
 
-SymbolTable<Entry> initVarEnv()
+typedef SymbolTable<Entry> VarEnv;
+typedef SymbolTable<Type> TypeEnv;
+
+VarEnv initVarEnv()
 {
     // add built-in functions
-    SymbolTable<Entry> venv;
+    VarEnv venv;
     venv.push(Symbol("print"), &Entry(KFunc, NULL, &vector<Type *>{&StringType()}));
     venv.push(Symbol("printi"), &Entry(KFunc, NULL, &vector<Type *>{&IntType()}));
     venv.push(Symbol("flush"), &Entry(KFunc, NULL, NULL));
@@ -34,11 +37,12 @@ SymbolTable<Entry> initVarEnv()
     venv.push(Symbol("concat"), &Entry(KFunc, &StringType(), &vector<Type *>{&StringType(), &StringType()}));
     venv.push(Symbol("not"), &Entry(KFunc, &IntType(), &vector<Type *>{&IntType()}));
     venv.push(Symbol("exit"), &Entry(KFunc, NULL, &vector<Type *>{&IntType()}));
+    return venv;
 };
 
-SymbolTable<Type> initTypeEnv()
+TypeEnv initTypeEnv()
 {
-    SymbolTable<Type> tenv;
+    TypeEnv tenv;
     tenv.push(Symbol("int"), &IntType());
     tenv.push(Symbol("string"), &StringType());
     return tenv;

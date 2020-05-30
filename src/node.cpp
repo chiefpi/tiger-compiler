@@ -1,4 +1,5 @@
 #include "node.h"
+#include "type.h"
 
 using namespace std;
 
@@ -11,6 +12,14 @@ void NExprList::print(int depth) const
         next->print(depth + 1);
 }
 
+Type NExprList::traverse(VarEnv *VEnv, TypeEnv *TEnv)
+{
+    Type ty = head->traverse(VEnv, TEnv);
+    if (next != NULL)
+        ty = next->traverse(VEnv, TEnv);
+    return ty;
+}
+
 void NDeclList::print(int depth) const
 {
     printIndent(depth);
@@ -18,6 +27,11 @@ void NDeclList::print(int depth) const
     head->print(depth + 1);
     if (next != NULL)
         next->print(depth + 1);
+}
+
+Type NDeclList::traverse(VarEnv* VEnv, TypeEnv* TEnv)
+{
+    return Type();
 }
 
 void NVarList::print(int depth) const
@@ -33,8 +47,8 @@ void NFieldTypeList::print(int depth) const
 {
     printIndent(depth);
     cout << "<FieldTypeList>" << endl;
-    id.print(depth + 1);
-    type.print(depth + 1);
+    id->print(depth + 1);
+    type->print(depth + 1);
     if (next != NULL)
         next->print(depth + 1);
 }
@@ -43,8 +57,8 @@ void NFieldExprList::print(int depth) const
 {
     printIndent(depth);
     cout << "<FieldExprList>" << endl;
-    id.print(depth + 1);
-    initValue.print(depth + 1);
+    id->print(depth + 1);
+    initValue->print(depth + 1);
     if (next != NULL)
         next->print(depth + 1);
 }
@@ -78,7 +92,7 @@ void NVarExpr::print(int depth) const
     printIndent(depth);
     cout << "<VarExpr>" << endl;
     printIndent(depth + 1);
-    var.print(depth + 1);
+    var->print(depth + 1);
 }
 
 void NOpExpr::print(int depth) const
@@ -105,7 +119,7 @@ void NRecordExpr::print(int depth) const
 {
     printIndent(depth);
     cout << "<RecordExpr>" << endl;
-    type.print(depth + 1);
+    type->print(depth + 1);
     fields->print(depth + 1);
 }
 
@@ -113,7 +127,7 @@ void NArrayExpr::print(int depth) const
 {
     printIndent(depth);
     cout << "<ArrayExpr>" << endl;
-    type.print(depth + 1);
+    type->print(depth + 1);
     size->print(depth + 1);
     initValue->print(depth + 1);
 }
@@ -122,7 +136,7 @@ void NCallExpr::print(int depth) const
 {
     printIndent(depth);
     cout << "<CallExpr>" << endl;
-    func.print(depth + 1);
+    func->print(depth + 1);
     if (args != NULL)
         args->print(depth + 1);
 }
@@ -179,11 +193,11 @@ void NFuncDecl::print(int depth) const
 {
     printIndent(depth);
     cout << "<FuncDecl>" << endl;
-    id.print(depth + 1);
+    id->print(depth + 1);
     params->print(depth + 1);
     body->print(depth + 1);
     if (retType != NULL)
-        retType - ? print(depth + 1);
+        retType->print(depth + 1);
     if (next != NULL)
         next->print(depth + 1);
 }
@@ -192,7 +206,7 @@ void NTypeDecl::print(int depth) const
 {
     printIndent(depth);
     cout << "<TypeDecl>" << endl;
-    id.print(depth + 1);
+    id->print(depth + 1);
     type->print(depth + 1);
     if (next != NULL)
         next->print(depth + 1);
@@ -202,7 +216,7 @@ void NVarDecl::print(int depth) const
 {
     printIndent(depth);
     cout << "<VarDecl>" << endl;
-    id.print(depth + 1);
+    id->print(depth + 1);
     if (type != NULL)
         type->print(depth + 1);
     initValue->print(depth + 1);
@@ -212,7 +226,7 @@ void NArrayType::print(int depth) const
 {
     printIndent(depth);
     cout << "<ArrayType>" << endl;
-    id.print(depth + 1);
+    id->print(depth + 1);
 }
 
 void NRecordType::print(int depth) const
@@ -226,14 +240,14 @@ void NNameType::print(int depth) const
 {
     printIndent(depth);
     cout << "<NameType>" << endl;
-    id.print(depth + 1);
+    id->print(depth + 1);
 }
 
 void NSimpleVar::print(int depth) const
 {
     printIndent(depth);
     cout << "<SimpleVar>" << endl;
-    id.print(depth + 1);
+    id->print(depth + 1);
 }
 
 void NFieldVar::print(int depth) const
@@ -241,7 +255,7 @@ void NFieldVar::print(int depth) const
     printIndent(depth);
     cout << "<FieldVar>" << endl;
     var->print(depth + 1);
-    id.print(depth + 1);
+    id->print(depth + 1);
 }
 
 void NSubscriptVar::print(int depth) const
