@@ -177,7 +177,7 @@ void yyerror(const char *);
                     case 'n': yytext[i]=10; break;
                     case 'r': yytext[i]=13; break;
                     case 't': yytext[i]=9; break;
-                    case '//': yytext[i]=92; break;
+                    case '\\': yytext[i]=92; break;
                     case '"': yytext[i]=34; break;
                 }
                 for ( int j = i+1; j < length; j++)

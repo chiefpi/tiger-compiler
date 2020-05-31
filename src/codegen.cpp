@@ -4,7 +4,7 @@
 
 
 /* Compile the AST into a module */
-void CodeGenContext::generateCode(Node &root) {
+void CodeGenContext::generateCode(NExpr &root) {
 #ifdef DEBUG
     std::cout << "Generating code...\n";
 #endif
@@ -23,12 +23,19 @@ void CodeGenContext::generateCode(Node &root) {
 #ifdef DEBUG
     std::cout << "Code is generated.\n";
 #endif
-    /* Print the bytecode in a human-readable format 
-       to see if our program compiled properly
-     */
+    /* Print the bytecode in a human-readable format */
     // module->dump();
 
     legacy::PassManager pm;
+
+    /* Optimizations */
+	pm.add(createBasicAliasAnalysisPass());
+	pm.add(createPromoteMemoryToRegisterPass());
+	pm.add(createInstructionCombiningPass());
+	pm.add(createReassociatePass());
+	pm.add(createGVNPass());
+	pm.add(createCFGSimplificationPass());
+
     pm.add(createPrintModulePass(outs()));
     pm.run(*module);
 }
@@ -48,64 +55,56 @@ GenericValue CodeGenContext::runCode() {
     return v;
 }
 
-/* Returns an LLVM type based on the identifier */
-static Type *typeOf(const Symbol& type) {
-    if (type.name.compare("int") == 0)
-        return Type::getInt64Ty(MyContext);
-    else if (type.name.compare("string") == 0)
-        return Type::getDoubleTy(MyContext); // TODO: string
-    return Type::getVoidTy(MyContext);
+/* Returns an LLVM type based on the symbol */
+Type *CodeGenContext::typeOf(const Symbol &sb) {
+    return types[sb];
 }
 
 
 /* Code Generation */
 
-Value *NExpr::codeGen(CodeGenContext &context) {
-    
-}
+// Value *NExpr::codeGen(CodeGenContext &context) {}
 
 Value *NExprList::codeGen(CodeGenContext &context) {
 
 }
 
-Value *NDecl::codeGen(CodeGenContext &context) {
-
-}
+// Value *NDecl::codeGen(CodeGenContext &context) {}
 
 Value *NDeclList::codeGen(CodeGenContext &context) {
 
 }
 
-Value *NVar::codeGen(CodeGenContext &context) {
-
-}
+// Value *NVar::codeGen(CodeGenContext &context) {}
 
 Value *NVarList::codeGen(CodeGenContext &context) {
 
 }
 
-Value *NType::codeGen(CodeGenContext &context) {
-
-}
+// Value *NType::codeGen(CodeGenContext &context) {}
 
 Value *NFieldTypeList::codeGen(CodeGenContext &context) {
 
 }
 
 Value *NFieldExprList::codeGen(CodeGenContext &context) {
-    return exp->codeGen(context);
+#ifdef DEBUG
+    std::cout << "Creating field expression list " << value << std::endl;
+#endif
+    for (NFieldExprList *it = )
+    return ->codeGen(context);
 }
 
 Value *NStrExpr::codeGen(CodeGenContext &context) {
 #ifdef DEBUG
-    std::cout << "Creating string " << value << endl;
+    std::cout << "Creating string " << value << std::endl;
 #endif
     return builder.CreateGlobalStringPtr(value, "str");
 }
 
 Value *NIntExpr::codeGen(CodeGenContext &context) {
 #ifdef DEBUG
-    std::cout << "Creating integer " << value << endl;
+    std::cout << "Creating integer " << value << std::endl;
 #endif
     // return ConstantInt::get(Type::getInt64Ty(MyContext), value, true);
     return ConstantInt::get(module->getContext(), APInt(64, value), true);
@@ -113,14 +112,14 @@ Value *NIntExpr::codeGen(CodeGenContext &context) {
 
 Value *NNilExpr::codeGen(CodeGenContext &context) { // TODO: verify null pointer
 #ifdef DEBUG
-    std::cout << "Creating nil" << endl;
+    std::cout << "Creating nil" << std::endl;
 #endif
     return ConstantPointerNull::get(PointerType::getUnqual(StructType::get(context)));
 }
 
 Value *NOpExpr::codeGen(CodeGenContext &context) {
 #ifdef DEBUG
-    std::cout << "Creating binary operation " << op << endl;
+    std::cout << "Creating binary operation " << op << std::endl;
 #endif
     Instruction::BinaryOps inst;
     switch (op) { // TODO: check token consistency
@@ -143,17 +142,18 @@ math:
     return BinaryOperator::Create(inst, lhs.codeGen(context), 
         rhs.codeGen(context), "", context.currentBlock());
 cmp:
-    return new ZExtInst(
-        new ICmpInst(*context.currentBlock(), inst, int32_11, const_int32_3, ""),
-        IntegerType::get(mod->getContext(), 32), "", context.currentBlock());
+    return new ZExtInst( // compare and cast
+        new ICmpInst(*context.currentBlock(), inst, lhs.codeGen(context), rhs.codeGen(context), ""),
+        IntegerType::get(MyContext, 64), "", context.currentBlock());
 }
 
 Value *NAssignExpr::codeGen(CodeGenContext &context) {
 #ifdef DEBUG
-    std::cout << "Creating assignment for " << lhs.name << endl;
+    std::cout << "Creating assignment for " << lhs.name << std::endl;
 #endif
+    vars.find()
     if (context.locals().find(lhs.name) == context.locals().end()) {
-        std::cerr << "Undeclared variable " << lhs.name << endl;
+        std::cerr << "Undeclared variable " << lhs.name << std::endl;
         return NULL;
     }
     return new StoreInst(rhs.codeGen(context), context.locals()[lhs.name], false, context.currentBlock());
@@ -161,109 +161,48 @@ Value *NAssignExpr::codeGen(CodeGenContext &context) {
 
 Value *NRecordExpr::codeGen(CodeGenContext &context) { // TODO
 #ifdef DEBUG
-    std::cout << "Creating record for " << lhs.name << endl;
+    std::cout << "Creating record for " << lhs.name << std::endl;
 #endif
-    builder.GetInsertBlock()->getParent();
-    // auto var = createEntryBlockAlloca(function, type, "record");
-    auto eleType = context.getElementType(type_);
-    auto size = context.module->getDataLayout().getTypeAllocSize(eleType);
+    auto etype = cast<PointerType>(typeOf(type))->getElementType();
+    auto size = context.module->getDataLayout().getTypeAllocSize(etype);
     Value *var = builder.CreateCall(
-        context.allocaRecordFunction,
+        createIntrinsicFunction(
+            "",
+            {Type::getInt64Ty(context)},
+            Type::getInt8PtrTy(context))
         ConstantInt::get(context.intType, APInt(64, size)),
-        "alloca");
-    var = builder.CreateBitCast(var, type_, "record");
+        "");
+    var = builder.CreateBitCast(var, type, "");
     size_t idx = 0;
-    for (auto &field : fieldExps_) {
-        auto exp = field->codeGen(context);
-        auto elementPtr = builder.CreateGEP(
-            field->type_, var,
+    for (NFieldExprList *it = fields; it != NULL; it = it->next) {
+        auto exp = (*it)->codeGen(context);
+        auto eptr = builder.CreateGEP(
+            (*it)->type,
+            var,
             ConstantInt::get(Type::getInt64Ty(MyContext), APInt(64, idx)),
             "");
-        context.checkStore(exp, elementPtr);
-        // builder.CreateStore(exp, elementPtr);
+        // context.checkStore(exp, eptr);
+        builder.CreateStore(exp, eptr);
         ++idx;
     }
     return var;
 }
 
 Value *NArrayExpr::codeGen(CodeGenContext &context) {
-    auto function = builder.GetInsertBlock()->getParent();
-    // if (!type_->isPointerTy()) return context.logErrorV("Array type required");
-    auto eleType = context.getElementType(type_);
-    auto size = size_->codeGen(context);
-    auto init = init_->codeGen(context);
-    auto eleSize = context.module->getDataLayout().getTypeAllocSize(eleType);
-    Value *arrayPtr = builder.CreateCall(
-        context.allocaArrayFunction,
-        std::vector<Value *>{
-            size, ConstantInt::get(Type::getInt64Ty(MyContext),
-                                        APInt(64, eleSize))},
-        "alloca");
-    arrayPtr = builder.CreateBitCast(arrayPtr, type_, "array");
-
-    // auto arrayPtr = createEntryBlockAlloca(function, eleType, "arrayPtr",
-    // size);
-    auto zero = ConstantInt::get(MyContext, APInt(64, 0, true));
-
-    std::string indexName = "index";
-    auto indexPtr = context.createEntryBlockAlloca(
-        function, Type::getInt64Ty(MyContext), indexName);
-    // before loop:
-    builder.CreateStore(zero, indexPtr);
-
-    auto testBlock = BasicBlock::Create(MyContext, "test", function);
-    auto loopBlock = BasicBlock::Create(MyContext, "loop", function);
-    auto nextBlock = BasicBlock::Create(MyContext, "next", function);
-    auto afterBlock = BasicBlock::Create(MyContext, "after", function);
-
-    builder.CreateBr(testBlock);
-
-    builder.SetInsertPoint(testBlock);
-
-    auto index = builder.CreateLoad(indexPtr, indexName);
-    auto cond = builder.CreateICmpSLT(index, size, "loopcond");
-    // auto loopEndBB = builder.GetInsertBlock();
-
-    // goto after or loop
-    builder.CreateCondBr(cond, loopBlock, afterBlock);
-
-    builder.SetInsertPoint(loopBlock);
-
-    // loop:
-    // variable->addIncoming(low, preheadBB);
-
-    // TODO: check its non-type value
-    auto elePtr = builder.CreateGEP(eleType, arrayPtr, index, "elePtr");
-    context.checkStore(init, elePtr);
-    // builder.CreateStore(init, elePtr);
-    // goto next:
-    builder.CreateBr(nextBlock);
-
-    // next:
-    builder.SetInsertPoint(nextBlock);
-
-    auto nextVar = builder.CreateAdd(
-        index, ConstantInt::get(MyContext, APInt(64, 1)),
-        "nextvar");
-    builder.CreateStore(nextVar, indexPtr);
-
-    builder.CreateBr(testBlock);
-
-    // after:
-    builder.SetInsertPoint(afterBlock);
-
-    // variable->addIncoming(next, loopEndBB);
-
-    return arrayPtr;
+#ifdef DEBUG
+    std::cout << "Creating array" << std::endl;
+#endif
+    ArrayType* arrayTy = ArrayType::get(IntegerType::get(MyContext, 64), size.codeGen(context)); // TODO: int to type
+    return  new AllocaInst(arrayTy, "", context.currentBlock());
 }
 
 Value *NCallExpr::codeGen(CodeGenContext &context) {
 #ifdef DEBUG
-    std::cout << "Creating method call: " << id.name << endl;
+    std::cout << "Creating function call " << id.name << std::endl;
 #endif
     Function *function = context.module->getFunction(id.name.c_str());
     if (function == NULL)
-        std::cerr << "No such function: " << id.name << endl;
+        std::cerr << "No such function: " << id.name << std::endl;
 
     std::vector<Value*> args;
     for (NExprList *it = params; it != NULL; it = it->next)
@@ -274,7 +213,7 @@ Value *NCallExpr::codeGen(CodeGenContext &context) {
 
 Value *NSeqExpr::codeGen(CodeGenContext &context) {
 #ifdef DEBUG
-    std::cout << "Creating sequential expression " << id.name << endl;
+    std::cout << "Creating sequential expression " << id.name << std::endl;
 #endif
     Value *last = NULL;
     for (NExprList *it = exprs; it != NULL; it = it->next)
@@ -282,35 +221,32 @@ Value *NSeqExpr::codeGen(CodeGenContext &context) {
     return last;
 }
 
-Value *NIfExpr::codeGen(CodeGenContext &context) {
+Value *NIfExpr::codeGen(CodeGenContext &context) { // TODO: verify
 #ifdef DEBUG
-    std::cout << "Creating if expression" << endl;
+    std::cout << "Creating if expression" << std::endl;
 #endif
-    auto test = test->codeGen(context);
-
-    test = builder.CreateICmpNE(test, context.zero, "iftest");
+    test = builder.CreateICmpNE(test->codeGen(context), ConstantInt::get(intType, APInt(64, 0)), "");
     auto function = builder.GetInsertBlock()->getParent();
 
-    auto thenBlock = BasicBlock::Create(MyContext, "then", function);
-    auto elseBlock = BasicBlock::Create(MyContext, "else");
-    auto mergeBlock = BasicBlock::Create(MyContext, "ifcont");
+    auto thenBlock = BasicBlock::Create(MyContext, "", function);
+    auto elseBlock = BasicBlock::Create(MyContext, "");
+    auto mergeBlock = BasicBlock::Create(MyContext, "");
 
     builder.CreateCondBr(test, thenBlock, elseBlock);
-
     builder.SetInsertPoint(thenBlock);
 
     auto then = thenClause->codeGen(context);
     builder.CreateBr(mergeBlock);
 
     thenBlock = builder.GetInsertBlock();
-
     function->getBasicBlockList().push_back(elseBlock);
     builder.SetInsertPoint(elseBlock);
 
-    Value *elsee;
-    if (else_) {
-        elsee = else_->codeGen(context);
-        if (!elsee) return NULL;
+    Value *elseValue;
+    if (elseClause) {
+        elseValue = elseClause->codeGen(context);
+        if (!elseValue)
+            return NULL;
     }
 
     builder.CreateBr(mergeBlock);
@@ -319,18 +255,16 @@ Value *NIfExpr::codeGen(CodeGenContext &context) {
     function->getBasicBlockList().push_back(mergeBlock);
     builder.SetInsertPoint(mergeBlock);
 
-    if (else_ && !then->getType()->isVoidTy() && !elsee->getType()->isVoidTy()) {
-        auto PN = builder.CreatePHI(then->getType(), 2, "iftmp");
-        then = context.convertNil(then, elsee);
-        elsee = context.convertNil(elsee, then);
-        PN->addIncoming(then, thenBlock);
-        PN->addIncoming(elsee, elseBlock);
-
-        return PN;
-    } else {
-        return Constant::getNullValue(
-            Type::getInt64Ty(MyContext));
+    if (elseClause && !then->getType()->isVoidTy() && !elseValue->getType()->isVoidTy()) {
+        auto pn = builder.CreatePHI(then->getType(), 2, "");
+        // then = context.convertNil(then, elseValue);
+        // elseValue = context.convertNil(elseValue, then);
+        pn->addIncoming(then, thenBlock);
+        pn->addIncoming(elseValue, elseBlock);
+        return pn;
     }
+
+    return Constant::getNullValue(Type::getInt64Ty(MyContext));
 }
 
 Value *NWhileExpr::codeGen(CodeGenContext &context) {
@@ -339,13 +273,12 @@ Value *NWhileExpr::codeGen(CodeGenContext &context) {
     auto loopBlock = BasicBlock::Create(MyContext, "", function);
     auto nextBlock = BasicBlock::Create(MyContext, "", function);
     auto afterBlock = BasicBlock::Create(MyContext, "", function);
-    // context.loopStack.push({nextBlock, afterBlock});
 
     builder.CreateBr(testBlock);
     builder.SetInsertPoint(testBlock);
 
-    builder.CreateCondBr( // after or loop
-        builder.CreateICmpEQ(test->codeGen(context), context.zero, "loopcond"),
+    builder.CreateCondBr( // to after or loop
+        builder.CreateICmpEQ(test->codeGen(context), context.zero, ""),
         afterBlock,
         loopBlock);
     builder.SetInsertPoint(loopBlock);
@@ -372,78 +305,62 @@ Value *NForExpr::codeGen(CodeGenContext &context) {
     BasicBlock *loopBlock = BasicBlock::Create(MyContext, "", function);
     BasicBlock *nextBlock = BasicBlock::Create(MyContext, "", function);
     BasicBlock *afterBlock = BasicBlock::Create(MyContext, "", function);
-    // context.loopStack.push({nextBlock, afterBlock});
 
     builder.CreateBr(testBlock);
-
     builder.SetInsertPoint(testBlock);
 
     auto cond = builder.CreateICmpSLE(
-        builder.CreateLoad(varDec_->read(context), var_), high,
-        "loopcond");
-    // auto loopEndBB = builder.GetInsertBlock();
+        builder.CreateLoad(varDec_->read(context), var_), high, "");
 
-    // goto after or loop
     builder.CreateCondBr(cond, loopBlock, afterBlock);
-
     builder.SetInsertPoint(loopBlock);
-
-    // loop:
-    // variable->addIncoming(low, preheadBB);
 
     auto oldVal = context.valueDecs[var_];
     if (oldVal) context.valueDecs.popOne(var_);
     context.valueDecs.push(var_, varDec_);
-    // TODO: check its non-type value
+    // TODO: check non-type value
     if (!body_->codeGen(context)) return NULL;
 
-    // goto next:
     builder.CreateBr(nextBlock);
-
-    // next:
     builder.SetInsertPoint(nextBlock);
 
     auto nextVar = builder.CreateAdd(
         builder.CreateLoad(varDec_->read(context), var_),
-        ConstantInt::get(MyContext, APInt(64, 1)), "nextvar");
+        ConstantInt::get(MyContext, APInt(64, 1)), "");
     builder.CreateStore(nextVar, varDec_->read(context));
 
     builder.CreateBr(testBlock);
-
-    // after:
     builder.SetInsertPoint(afterBlock);
-
-    // variable->addIncoming(next, loopEndBB);
 
     if (oldVal)
         context.valueDecs[var_] = oldVal;
     else
         context.valueDecs.popOne(var_);
 
-    // context.loopStack.pop();
-
     return Constant::getNullValue(Type::getInt64Ty(MyContext));
 }
 
 Value *NBreakExpr::codeGen(CodeGenContext &context) {
-
+#ifdef DEBUG
+    std::cout << "Creating break" << std::endl;
+#endif
     context.builder.CreateBr(std::get<1>(context.loopStack.top()));
-    return llvm::Constant::getNullValue(llvm::Type::getInt64Ty(MyContext)); // nothing
+    return Constant::getNullValue(Type::getInt64Ty(MyContext)); // nothing
 }
 
 Value *NLetExpr::codeGen(CodeGenContext &context) {
-    context.valueDecs.enter();
-    context.functionDecs.enter();
+    context.tenv.enterScope();
+    context.vars.enterScope();
     for (auto &dec : decs_) dec->codeGen(context);
     auto result = body_->codeGen(context);
-    context.functionDecs.exit();
-    context.valueDecs.exit();
+    context.vars.quitScope();
+    context.types.quitScope();
     return result;
 }
 
 Value *NFuncDecl::codeGen(CodeGenContext &context) {
 #ifdef DEBUG
-    std::cout << "Creating function: " << id.name << endl;
+    std::cout << "Creating function: " << id.name << std::endl;
 #endif
     std::vector<Type*> argTypes;
     for (NFieldTypeList *it = params; it != NULL; it = it.next)
@@ -458,9 +375,9 @@ Value *NFuncDecl::codeGen(CodeGenContext &context) {
     Function::arg_iterator argsValues = function->arg_begin();
     Value* argumentValue;
 
-    for (NFieldTypeList &it = params; it != NULL; it = it.next) {
-        it.codeGen(context);
-        
+    for (NFieldTypeList *it = params; it != NULL; it = it->next) {
+        (*it).codeGen(context);
+
         argumentValue = &*argsValues++;
         argumentValue->setName((*it)->id.name.c_str());
         StoreInst *inst = new StoreInst(argumentValue, context.locals()[(*it)->id.name], false, bblock);
@@ -476,22 +393,28 @@ Value *NFuncDecl::codeGen(CodeGenContext &context) {
 
 Value *NTypeDecl::codeGen(CodeGenContext &context) {
 #ifdef DEBUG
-    std::cout << "Creating type declaration " << type.name << " " << id.name << endl;
+    std::cout << "Creating type declaration " << type.name << " " << id.name << std::endl;
 #endif
 
 }
 
 Value *NVarDecl::codeGen(CodeGenContext &context) {
 #ifdef DEBUG
-    std::cout << "Creating variable declaration " << type.name << " " << id.name << endl;
+    std::cout << "Creating variable declaration " << type.name << " " << id.name << std::endl;
 #endif
-    AllocaInst *alloc = new AllocaInst(typeOf(type), id.name.c_str(), context.currentBlock());
-    context.locals()[id.name] = alloc;
+    AllocaInst *alloc = new AllocaInst(typeOf(type), "", context.currentBlock());
+    venv.push(id, alloc); // TODO: modify env
     if (initValue != NULL) {
-        NAssignExpr assn(id, *initValue);
+        NAssignExpr assn(line, index, id, *initValue);
         assn.codeGen(context);
     }
     return alloc;
+  auto init = initValue->codegen(context);
+  if (!init) return nullptr;
+  auto var = context.checkStore(init, read(context));
+  // context.builder.CreateStore(init, variable);
+  context.valueDecs.push(name_, this);
+  return var;
 }
 
 Value *NArrayType::codeGen(CodeGenContext &context) {
@@ -501,23 +424,28 @@ Value *NArrayType::codeGen(CodeGenContext &context) {
 }
 
 Value *NRecordType::codeGen(CodeGenContext &context) {
-
+#ifdef DEBUG
+    std::cout << "Creating record type " << type.name <<
+#endif
 }
 
 Value *NNameType::codeGen(CodeGenContext &context) {
-
+#ifdef DEBUG
+    std::cout << "Creating name type " << *id << std::endl;
+#endif
 }
 
 Value *NSimpleVar::codeGen(CodeGenContext &context) {
 #ifdef DEBUG
-    std::cout << "Creating simple variable " << id.name << endl;
+    std::cout << "Creating simple variable " << id.name << std::endl;
 #endif
     // return context.valueDecs[name_]->read(context);
+    return context.venv[name];
 }
 
 Value *NFieldVar::codeGen(CodeGenContext &context) {
 #ifdef DEBUG
-    std::cout << "Creating field variable " << var.name << " " << id.name << endl;
+    std::cout << "Creating field variable " << var.name << " " << id.name << std::endl;
 #endif
     return builder.CreateGEP(
         type, // TODO
@@ -528,7 +456,7 @@ Value *NFieldVar::codeGen(CodeGenContext &context) {
 
 Value *NSubscriptVar::codeGen(CodeGenContext &context) {
 #ifdef DEBUG
-    std::cout << "Creating subscription variable " << var.name << " " << id.name << endl;
+    std::cout << "Creating subscription variable " << var.name << " " << id.name << std::endl;
 #endif
     return builder.CreateGEP(
         type, // TODO
@@ -540,10 +468,10 @@ Value *NSubscriptVar::codeGen(CodeGenContext &context) {
 
 Value* Symbol::codeGen(CodeGenContext& context) {
 #ifdef DEBUG
-    std::cout << "Creating identifier reference " << name << endl;
+    std::cout << "Creating identifier reference " << name << std::endl;
 #endif
     if (context.locals().find(name) == context.locals().end()) {
-        std::cerr << "undeclared variable " << name << endl;
+        std::cerr << "Undeclared variable: " << name << std::endl;
         return NULL;
     } // TODO
     return new LoadInst(context.locals()[name], "", false, context.currentBlock());
@@ -561,12 +489,12 @@ Value* Symbol::codeGen(CodeGenContext& context) {
 //     Value *last = NULL;
 //     for (it = statements.begin(); it != statements.end(); it++) {
 // #ifdef DEBUG
-//         std::cout << "Generating code for " << typeid(**it).name() << endl;
+//         std::cout << "Generating code for " << typeid(**it).name() << std::endl;
 // #endif
 //         last = (**it).codeGen(context);
 //     }
 // #ifdef DEBUG
-//     std::cout << "Creating block" << endl;
+//     std::cout << "Creating block" << std::endl;
 // #endif
 //     return last;
 // }
@@ -574,7 +502,7 @@ Value* Symbol::codeGen(CodeGenContext& context) {
 // Value* NExpressionStatement::codeGen(CodeGenContext& context)
 // {
 // #ifdef DEBUG
-//     std::cout << "Generating code for " << typeid(expression).name() << endl;
+//     std::cout << "Generating code for " << typeid(expression).name() << std::endl;
 // #endif
 //     return expression.codeGen(context);
 // }
@@ -582,7 +510,7 @@ Value* Symbol::codeGen(CodeGenContext& context) {
 // Value* NReturnStatement::codeGen(CodeGenContext& context)
 // {
 // #ifdef DEBUG
-//     std::cout << "Generating return code for " << typeid(expression).name() << endl;
+//     std::cout << "Generating return code for " << typeid(expression).name() << std::endl;
 // #endif
 //     Value *returnValue = expression.codeGen(context);
 //     context.setCurrentReturnValue(returnValue);
