@@ -1,7 +1,9 @@
 /* Code generation context is maintained with a stack of blocks. */
+#pragma once
 
 #include <stack>
 #include <typeinfo>
+
 #include <llvm/IR/Module.h>
 #include <llvm/IR/Function.h>
 #include <llvm/IR/Type.h>
@@ -12,17 +14,22 @@
 #include <llvm/IR/CallingConv.h>
 #include <llvm/IR/IRPrintingPasses.h>
 #include <llvm/IR/IRBuilder.h>
+
 #include <llvm/Bitcode/BitstreamReader.h>
 #include <llvm/Bitcode/BitstreamWriter.h>
+
 #include <llvm/Support/TargetSelect.h>
+#include <llvm/Support/raw_ostream.h>
+
 #include <llvm/ExecutionEngine/ExecutionEngine.h>
 #include <llvm/ExecutionEngine/MCJIT.h>
 #include <llvm/ExecutionEngine/GenericValue.h>
-#include <llvm/Support/raw_ostream.h>
+
+#include "env.h"
+#include "symbol.h"
+#include "symbolTable.h"
 
 using namespace llvm;
-
-class NBlock;
 
 static LLVMContext MyContext;
 static IRBuilder<> builder{MyContext};
@@ -31,8 +38,6 @@ class CodeGenBlock {
 public:
     BasicBlock *block;
     Value *returnValue;
-    std::map<std::string, Value*> locals;
-    IRBuilder<> Builder(getGlobalContext());
 };
 
 class CodeGenContext {
@@ -41,15 +46,25 @@ class CodeGenContext {
 
 public:
     Module *module;
+    VarEnv venv;
+    TypeEnv tenv;
+
     CodeGenContext() {
-        module = new Moule("main", MyContext);
+        module = new Module("main", MyContext);
+        venv = initVarEnv();
+        tenv = initTypeEnv();
     }
 
-    void generateCode(NBlock &root);
+    void generateCode(NExpr &root);
     GenericValue runCode();
-    std::map<std::string, Value*> &locals() {
-        return blocks.top()->locals;
-    }
+
+    Type *typeOf(const Symbol &sb);
+    
+    // std::map<std::string, Value*> &locals() {
+    //     return blocks.top()->locals;
+    // }
+
+    /* Block stack operations */
     BasicBlock *currentBlock() {
         return blocks.top()->block;
     }
