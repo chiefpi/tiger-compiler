@@ -8,7 +8,7 @@ using namespace std;
 
 extern int yylex();
 extern int lineCount;
-extern int index;
+extern int indexCount;
 extern char *yytext;
 int status;
 NExpr* root;
