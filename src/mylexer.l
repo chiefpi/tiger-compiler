@@ -7,10 +7,11 @@
 using namespace std;
 
 int lineCount;
-// extern int index;
+int indexCount = 0;
 int yycolumn = 1;
 int commentCount = 0;
-void yyerror(const char *);
+
+void yyerror ( const char* s );
 %}
 
 /* option为默认 */
@@ -50,9 +51,12 @@ void yyerror(const char *);
     yymore();
 }
 
-[ ]+ ;
+[ ]+  {
+    printf("kongge\n");
+}
 
 <*>[\t] {
+    printf("kongge\n");
 }
 
 "array"      return ARRAY;
@@ -202,6 +206,7 @@ void yyerror(const char *);
 }
 
 [a-zA-Z][a-zA-Z_0-9]*|"_main" {
+    yyerror("cao");
     if(yyleng>255)
     {
         yyerror("Identifier too long");
