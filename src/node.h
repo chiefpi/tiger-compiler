@@ -5,7 +5,7 @@
 #include <vector>
 //#include <llvm/IR/Value.h>
 #include "symbol.h"
-#include "env.h"
+#include "semant.h"
 
 class CodeGenContext;
 
@@ -432,7 +432,7 @@ class NFuncDecl : public NDecl
 public:
 	Symbol *id;
 	NFieldTypeList *params;
-	NExprList *body;
+	NExpr *body;
 	NNameType *retType; // opt
 	NFuncDecl *next;	// opt
 
