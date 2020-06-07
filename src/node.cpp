@@ -12,13 +12,13 @@ void NExprList::print(int depth) const
         next->print(depth + 1);
 }
 
-Type NExprList::traverse(VarEnv *VEnv, TypeEnv *TEnv)
-{
-    Type ty = head->traverse(VEnv, TEnv);
-    if (next != NULL)
-        ty = next->traverse(VEnv, TEnv);
-    return ty;
-}
+// Type NExprList::traverse(VarEnv *VEnv, TypeEnv *TEnv)
+// {
+//     Type ty = head->traverse(VEnv, TEnv);
+//     if (next != NULL)
+//         ty = next->traverse(VEnv, TEnv);
+//     return ty;
+// }
 
 void NDeclList::print(int depth) const
 {
@@ -29,13 +29,13 @@ void NDeclList::print(int depth) const
         next->print(depth + 1);
 }
 
-Type NDeclList::traverse(VarEnv* VEnv, TypeEnv* TEnv)
-{
-    Type ty = head->traverse(VEnv, TEnv);
-    if (next != NULL)
-        ty = next->traverse(VEnv, TEnv);
-    return ty;
-}
+// Type NDeclList::traverse(VarEnv* VEnv, TypeEnv* TEnv)
+// {
+//     Type ty = head->traverse(VEnv, TEnv);
+//     if (next != NULL)
+//         ty = next->traverse(VEnv, TEnv);
+//     return ty;
+// }
 
 void NVarList::print(int depth) const
 {
@@ -46,13 +46,13 @@ void NVarList::print(int depth) const
         next->print(depth + 1);
 }
 
-Type NVarList::traverse(VarEnv* VEnv, TypeEnv* TEnv)
-{
-    Type ty = head->traverse(VEnv, TEnv);
-    if (next != NULL)
-        ty = next->traverse(VEnv, TEnv);
-    return ty;
-}
+// Type NVarList::traverse(VarEnv* VEnv, TypeEnv* TEnv)
+// {
+//     Type ty = head->traverse(VEnv, TEnv);
+//     if (next != NULL)
+//         ty = next->traverse(VEnv, TEnv);
+//     return ty;
+// }
 
 void NFieldTypeList::print(int depth) const
 {
@@ -64,10 +64,10 @@ void NFieldTypeList::print(int depth) const
         next->print(depth + 1);
 }
 
-Type NFieldTypeList::traverse(VarEnv* VEnv, TypeEnv* TEnv)
-{
-    return Type();
-}
+// Type NFieldTypeList::traverse(VarEnv* VEnv, TypeEnv* TEnv)
+// {
+//     return Type();
+// }
 
 void NFieldExprList::print(int depth) const
 {
@@ -79,10 +79,10 @@ void NFieldExprList::print(int depth) const
         next->print(depth + 1);
 }
 
-Type NFieldExprList::traverse(VarEnv* VEnv, TypeEnv* TEnv)
-{
-    return Type();
-}
+// Type NFieldExprList::traverse(VarEnv* VEnv, TypeEnv* TEnv)
+// {
+//     return Type();
+// }
 
 void NStrExpr::print(int depth) const
 {
@@ -92,10 +92,10 @@ void NStrExpr::print(int depth) const
     cout << value << endl;
 }
 
-Type NStrExpr::traverse(VarEnv* VEnv, TypeEnv* TEnv)
-{
-    return Type();
-}
+// Type NStrExpr::traverse(VarEnv* VEnv, TypeEnv* TEnv)
+// {
+//     return Type();
+// }
 
 void NIntExpr::print(int depth) const
 {
@@ -105,10 +105,10 @@ void NIntExpr::print(int depth) const
     cout << value << endl;
 }
 
-Type NIntExpr::traverse(VarEnv* VEnv, TypeEnv* TEnv)
-{
-    return Type();
-}
+// Type NIntExpr::traverse(VarEnv* VEnv, TypeEnv* TEnv)
+// {
+//     return Type();
+// }
 
 void NNilExpr::print(int depth) const
 {
@@ -118,23 +118,23 @@ void NNilExpr::print(int depth) const
     cout << "nil" << endl;
 }
 
-Type NNilExpr::traverse(VarEnv* VEnv, TypeEnv* TEnv)
-{
-    return Type();
-}
+// Type NNilExpr::traverse(VarEnv* VEnv, TypeEnv* TEnv)
+// {
+//     return Type();
+// }
 
 void NVarExpr::print(int depth) const
 {
     printIndent(depth);
     cout << "<VarExpr>" << endl;
-    printIndent(depth + 1);
+    //printIndent(depth + 1);
     var->print(depth + 1);
 }
 
-Type NVarExpr::traverse(VarEnv* VEnv, TypeEnv* TEnv)
-{
-    return Type();
-}
+// Type NVarExpr::traverse(VarEnv* VEnv, TypeEnv* TEnv)
+// {
+//     return Type();
+// }
 
 void NOpExpr::print(int depth) const
 {
@@ -144,14 +144,16 @@ void NOpExpr::print(int depth) const
     cout << "<OpExpr>" << endl;
     lhs->print(depth + 1);
     printIndent(depth + 1);
+    cout << "<op>" << endl;
+    printIndent(depth + 2);
     cout << op_name[op] << endl;
     rhs->print(depth + 1);
 }
 
-Type NOpExpr::traverse(VarEnv* VEnv, TypeEnv* TEnv)
-{
-    return Type();
-}
+// Type NOpExpr::traverse(VarEnv* VEnv, TypeEnv* TEnv)
+// {
+//     return Type();
+// }
 
 void NAssignExpr::print(int depth) const
 {
@@ -161,10 +163,10 @@ void NAssignExpr::print(int depth) const
     rhs->print(depth + 1);
 }
 
-Type NAssignExpr::traverse(VarEnv* VEnv, TypeEnv* TEnv)
-{
-    return Type();
-}
+// Type NAssignExpr::traverse(VarEnv* VEnv, TypeEnv* TEnv)
+// {
+//     return Type();
+// }
 
 void NRecordExpr::print(int depth) const
 {
@@ -174,10 +176,10 @@ void NRecordExpr::print(int depth) const
     fields->print(depth + 1);
 }
 
-Type NRecordExpr::traverse(VarEnv* VEnv, TypeEnv* TEnv)
-{
-    return Type();
-}
+// Type NRecordExpr::traverse(VarEnv* VEnv, TypeEnv* TEnv)
+// {
+//     return Type();
+// }
 
 void NArrayExpr::print(int depth) const
 {
@@ -188,10 +190,10 @@ void NArrayExpr::print(int depth) const
     initValue->print(depth + 1);
 }
 
-Type NArrayExpr::traverse(VarEnv* VEnv, TypeEnv* TEnv)
-{
-    return Type();
-}
+// Type NArrayExpr::traverse(VarEnv* VEnv, TypeEnv* TEnv)
+// {
+//     return Type();
+// }
 
 void NCallExpr::print(int depth) const
 {
@@ -202,10 +204,10 @@ void NCallExpr::print(int depth) const
         args->print(depth + 1);
 }
 
-Type NCallExpr::traverse(VarEnv* VEnv, TypeEnv* TEnv)
-{
-    return Type();
-}
+// Type NCallExpr::traverse(VarEnv* VEnv, TypeEnv* TEnv)
+// {
+//     return Type();
+// }
 
 void NSeqExpr::print(int depth) const
 {
@@ -214,10 +216,10 @@ void NSeqExpr::print(int depth) const
     exprs->print(depth + 1);
 }
 
-Type NSeqExpr::traverse(VarEnv* VEnv, TypeEnv* TEnv)
-{
-    return Type();
-}
+// Type NSeqExpr::traverse(VarEnv* VEnv, TypeEnv* TEnv)
+// {
+//     return Type();
+// }
 
 void NIfExpr::print(int depth) const
 {
@@ -229,10 +231,10 @@ void NIfExpr::print(int depth) const
         elseClause->print(depth + 1);
 }
 
-Type NIfExpr::traverse(VarEnv* VEnv, TypeEnv* TEnv)
-{
-    return Type();
-}
+// Type NIfExpr::traverse(VarEnv* VEnv, TypeEnv* TEnv)
+// {
+//     return Type();
+// }
 
 void NWhileExpr::print(int depth) const
 {
@@ -242,10 +244,10 @@ void NWhileExpr::print(int depth) const
     body->print(depth + 1);
 }
 
-Type NWhileExpr::traverse(VarEnv* VEnv, TypeEnv* TEnv)
-{
-    return Type();
-}
+// Type NWhileExpr::traverse(VarEnv* VEnv, TypeEnv* TEnv)
+// {
+//     return Type();
+// }
 
 void NForExpr::print(int depth) const
 {
@@ -256,10 +258,10 @@ void NForExpr::print(int depth) const
     body->print(depth + 1);
 }
 
-Type NForExpr::traverse(VarEnv* VEnv, TypeEnv* TEnv)
-{
-    return Type();
-}
+// Type NForExpr::traverse(VarEnv* VEnv, TypeEnv* TEnv)
+// {
+//     return Type();
+// }
 
 void NBreakExpr::print(int depth) const
 {
@@ -267,23 +269,23 @@ void NBreakExpr::print(int depth) const
     cout << "<BreakExpr>" << endl;
 }
 
-Type NBreakExpr::traverse(VarEnv* VEnv, TypeEnv* TEnv)
-{
-    return Type();
-}
+// Type NBreakExpr::traverse(VarEnv* VEnv, TypeEnv* TEnv)
+// {
+//     return Type();
+// }
 
 void NLetExpr::print(int depth) const
 {
     printIndent(depth);
-    cout << "<Letxpr>" << endl;
+    cout << "<LetExpr>" << endl;
     decls->print(depth + 1);
     body->print(depth + 1);
 }
 
-Type NLetExpr::traverse(VarEnv* VEnv, TypeEnv* TEnv)
-{
-    return Type();
-}
+// Type NLetExpr::traverse(VarEnv* VEnv, TypeEnv* TEnv)
+// {
+//     return Type();
+// }
 
 void NFuncDecl::print(int depth) const
 {
@@ -298,10 +300,10 @@ void NFuncDecl::print(int depth) const
         next->print(depth + 1);
 }
 
-Type NFuncDecl::traverse(VarEnv* VEnv, TypeEnv* TEnv)
-{
-    return Type();
-}
+// Type NFuncDecl::traverse(VarEnv* VEnv, TypeEnv* TEnv)
+// {
+//     return Type();
+// }
 
 void NTypeDecl::print(int depth) const
 {
@@ -313,10 +315,10 @@ void NTypeDecl::print(int depth) const
         next->print(depth + 1);
 }
 
-Type NTypeDecl::traverse(VarEnv* VEnv, TypeEnv* TEnv)
-{
-    return Type();
-}
+// Type NTypeDecl::traverse(VarEnv* VEnv, TypeEnv* TEnv)
+// {
+//     return Type();
+// }
 
 void NVarDecl::print(int depth) const
 {
@@ -328,10 +330,10 @@ void NVarDecl::print(int depth) const
     initValue->print(depth + 1);
 }
 
-Type NVarDecl::traverse(VarEnv* VEnv, TypeEnv* TEnv)
-{
-    return Type();
-}
+// Type NVarDecl::traverse(VarEnv* VEnv, TypeEnv* TEnv)
+// {
+//     return Type();
+// }
 
 void NArrayType::print(int depth) const
 {
@@ -340,10 +342,10 @@ void NArrayType::print(int depth) const
     id->print(depth + 1);
 }
 
-Type NArrayType::traverse(VarEnv* VEnv, TypeEnv* TEnv)
-{
-    return Type();
-}
+// Type NArrayType::traverse(VarEnv* VEnv, TypeEnv* TEnv)
+// {
+//     return Type();
+// }
 
 void NRecordType::print(int depth) const
 {
@@ -359,10 +361,10 @@ void NNameType::print(int depth) const
     id->print(depth + 1);
 }
 
-Type NNameType::traverse(VarEnv* VEnv, TypeEnv* TEnv)
-{
-    return Type();
-}
+// Type NNameType::traverse(VarEnv* VEnv, TypeEnv* TEnv)
+// {
+//     return Type();
+// }
 
 void NSimpleVar::print(int depth) const
 {
@@ -371,10 +373,10 @@ void NSimpleVar::print(int depth) const
     id->print(depth + 1);
 }
 
-Type NSimpleVar::traverse(VarEnv* VEnv, TypeEnv* TEnv)
-{
-    return Type();
-}
+// Type NSimpleVar::traverse(VarEnv* VEnv, TypeEnv* TEnv)
+// {
+//     return Type();
+// }
 
 void NFieldVar::print(int depth) const
 {
@@ -384,10 +386,10 @@ void NFieldVar::print(int depth) const
     id->print(depth + 1);
 }
 
-Type NFieldVar::traverse(VarEnv* VEnv, TypeEnv* TEnv)
-{
-    return Type();
-}
+// Type NFieldVar::traverse(VarEnv* VEnv, TypeEnv* TEnv)
+// {
+//     return Type();
+// }
 
 void NSubscriptVar::print(int depth) const
 {
@@ -397,7 +399,7 @@ void NSubscriptVar::print(int depth) const
     sub->print(depth + 1);
 }
 
-Type NSubscriptVar::traverse(VarEnv* VEnv, TypeEnv* TEnv)
-{
-    return Type();
-}
+// Type NSubscriptVar::traverse(VarEnv* VEnv, TypeEnv* TEnv)
+// {
+//     return Type();
+// }

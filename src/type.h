@@ -18,6 +18,7 @@ public:
     TypeKind type;
     Type() {}
     Type(TypeKind type) : type(type){};
+    bool CoerceTo(Type *t);
 };
 
 class ArrayType : public Type
@@ -41,8 +42,8 @@ public:
 class NameType : public Type
 {
 public:
-    Type *trueType;
     Symbol name;
+    Type *trueType;
     NameType(Symbol name, Type *tt = NULL) : name(name), trueType(tt) { type = TName; }
 };
 
@@ -62,4 +63,10 @@ class NilType : public Type
 {
 public:
     NilType() { type = TNil; }
+};
+
+class VoidType : public Type
+{
+public:
+    VoidType() { type = TVoid; }
 };

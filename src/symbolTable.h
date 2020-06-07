@@ -9,15 +9,15 @@ using namespace std;
 template <typename T>
 class SymbolTable
 {
-    typedef unordered_map<Symbol, T *> TableType;
+    typedef unordered_map<Symbol, T *, Symbol::Hasher> TableType;
 
 public:
     SymbolTable();
     ~SymbolTable();
-    T *findAll(Symbol const id);
-    T *find(Symbol const id);
-    void push(Symbol const id, T *const value);
-    void pop(Symbol const id);
+    T *findAll(Symbol id);
+    T *find(Symbol id);
+    void push(Symbol id, T *value);
+    void pop(Symbol id);
     void enterScope();
     void quitScope();
     void resetScope();
@@ -39,7 +39,7 @@ SymbolTable<T>::~SymbolTable()
 }
 
 template <typename T>
-T *SymbolTable<T>::findAll(const Symbol id)
+T *SymbolTable<T>::findAll(Symbol id)
 {
     for (auto s : stack)
         if (s[id])
@@ -48,7 +48,7 @@ T *SymbolTable<T>::findAll(const Symbol id)
 }
 
 template <typename T>
-T *SymbolTable<T>::find(const Symbol id)
+T *SymbolTable<T>::find(Symbol id)
 {
     if (stack.front()[id])
         return stack.front()[id];
@@ -56,13 +56,14 @@ T *SymbolTable<T>::find(const Symbol id)
 }
 
 template <typename T>
-void SymbolTable<T>::push(Symbol const id, T *const value)
+void SymbolTable<T>::push(Symbol id, T *value)
 {
-    stack.front()[id] = value;
+    stack.front().insert(make_pair(id, value));
+    // stack.front()[id] = value;
 }
 
 template <typename T>
-void SymbolTable<T>::pop(Symbol const id)
+void SymbolTable<T>::pop(Symbol id)
 {
     stack.front().erase(id);
 }
@@ -83,5 +84,5 @@ template <typename T>
 void SymbolTable<T>::resetScope()
 {
     stack.clear();
-    enter();
+    enterScope();
 }

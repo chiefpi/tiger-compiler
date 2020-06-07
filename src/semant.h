@@ -1,4 +1,5 @@
 #include "symbolTable.h"
+#pragma once
 #include "type.h"
 #include "env.h"
 #include "node.h"
@@ -13,12 +14,8 @@ public:
     }
     void analyze(NExpr *root)
     {
-        checkExpr(root);
+        root->traverse(&VEnv, &TEnv);
     }
-    Type *checkExpr(NExpr *node);
-    Type *checkDecl(NExpr *node);
-    Type *checkVar(NExpr *node);
-    Type *checkType(NExpr *node);
 
 private:
     static VarEnv VEnv;
@@ -33,4 +30,4 @@ private:
         VEnv.quitScope();
         TEnv.quitScope();
     }
-}
+};
