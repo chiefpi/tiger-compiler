@@ -4,8 +4,7 @@
 #include <iostream>
 #include <vector>
 //#include <llvm/IR/Value.h>
-#include "symbol.h"
-#include "semant.h"
+#include "env.h"
 
 class CodeGenContext;
 

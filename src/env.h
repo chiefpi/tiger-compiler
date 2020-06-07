@@ -1,11 +1,7 @@
-#ifndef ENV_H
-#define ENV_H
-
+#pragma once
 #include "symbolTable.h"
 #include "type.h"
 #include <vector>
-
-
 typedef enum Kind
 {
     KVar,
@@ -23,9 +19,3 @@ public:
 
 typedef SymbolTable<Entry> VarEnv;
 typedef SymbolTable<Type> TypeEnv;
-
-Entry *makeFuncEntry(Type retType, int count = 0, ...);
-VarEnv initVarEnv();
-TypeEnv initTypeEnv();
-
-#endif // !ENV_H

@@ -1,33 +1,34 @@
-#include "symbolTable.h"
 #pragma once
-#include "type.h"
-#include "env.h"
 #include "node.h"
+
+Entry *makeFuncEntry(Type, int, ...);
 
 class Semant
 {
 public:
     Semant()
     {
-        VEnv = initVarEnv();
-        TEnv = initTypeEnv();
+        initVarEnv();
+        initTypeEnv();
     }
     void analyze(NExpr *root)
     {
-        root->traverse(&VEnv, &TEnv);
+        root->traverse(VEnv, TEnv);
     }
 
 private:
-    static VarEnv VEnv;
-    static TypeEnv TEnv;
+    VarEnv *VEnv;
+    TypeEnv *TEnv;
     void enterScope()
     {
-        VEnv.enterScope();
-        TEnv.enterScope();
+        VEnv->enterScope();
+        TEnv->enterScope();
     }
     void quitScope()
     {
-        VEnv.quitScope();
-        TEnv.quitScope();
+        VEnv->quitScope();
+        TEnv->quitScope();
     }
+    void initTypeEnv();
+    void initVarEnv();
 };
