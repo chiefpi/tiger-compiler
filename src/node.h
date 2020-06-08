@@ -81,6 +81,7 @@ public:
 	}
 	//virtual llvm::Value *codeGen(CodeGenContext &context);
 	virtual void print(int depth) const;
+	
 	//virtual Type traverse(VarEnv *VEnv, TypeEnv *TEnv);
 };
 
