@@ -3,10 +3,12 @@
 
 using namespace std;
 
+int printCount = 0;
+
 void NExprList::print(int depth) const
 {
-    printIndent(depth);
-    cout << "<ExprList>" << endl;
+    // 2    printIndent(depth);
+    cout << "node" << printCount++ << "[" << "label = \"ExprList\"];" << endl;
     if (head != NULL)
     {
         head->print(depth + 1);
@@ -25,8 +27,10 @@ void NExprList::print(int depth) const
 
 void NDeclList::print(int depth) const
 {
-    printIndent(depth);
-    cout << "<DeclList>" << endl;
+    // 2    printIndent(depth);
+    cout << "node" << printCount++ << "[" << "label = \"DeclList\"];" << endl;
+
+    // cout << "<DeclList>" << endl;
     if (head != NULL)
     {
         head->print(depth + 1);
@@ -45,8 +49,10 @@ void NDeclList::print(int depth) const
 
 void NVarList::print(int depth) const
 {
-    printIndent(depth);
-    cout << "<VarList>" << endl;
+    // 2    printIndent(depth);
+    cout << "node" << printCount++ << "[" << "label = \"VarList\"];" << endl;
+
+    // cout << "<VarList>" << endl;
     if (head != NULL)
     {
         head->print(depth + 1);
@@ -65,8 +71,10 @@ void NVarList::print(int depth) const
 
 void NFieldTypeList::print(int depth) const
 {
-    printIndent(depth);
-    cout << "<FieldTypeList>" << endl;
+    // 2    printIndent(depth);
+    cout << "node" << printCount++ << "[" << "label = \"FieldTypeList\"];" << endl;
+
+    // cout << "<FieldTypeList>" << endl;
     id->print(depth + 1);
     type->print(depth + 1);
     if (next != NULL)
@@ -80,8 +88,10 @@ void NFieldTypeList::print(int depth) const
 
 void NFieldExprList::print(int depth) const
 {
-    printIndent(depth);
-    cout << "<FieldExprList>" << endl;
+    // 2    printIndent(depth);
+    cout << "node" << printCount++ << "[" << "label = \"FieldExprList\"];" << endl;
+
+    // cout << "<FieldExprList>" << endl;
     id->print(depth + 1);
     initValue->print(depth + 1);
     if (next != NULL)
@@ -95,10 +105,12 @@ void NFieldExprList::print(int depth) const
 
 void NStrExpr::print(int depth) const
 {
-    printIndent(depth);
-    cout << "<StrExpr>" << endl;
-    printIndent(depth + 1);
-    cout << value << endl;
+    // 2    printIndent(depth);
+    cout << "node" << printCount++ << "[" << "label = \"StrExpr\"];" << endl;
+    // cout << "<StrExpr>" << endl;
+    // 2    printIndent(depth + 1);
+    cout << "node" << printCount++ << "[" << "label = \"" << value << "\"];" << endl;
+    // cout << value << endl;
 }
 
 // Type NStrExpr::traverse(VarEnv* VEnv, TypeEnv* TEnv)
@@ -108,10 +120,12 @@ void NStrExpr::print(int depth) const
 
 void NIntExpr::print(int depth) const
 {
-    printIndent(depth);
-    cout << "<IntExpr>" << endl;
-    printIndent(depth + 1);
-    cout << value << endl;
+    // 2    printIndent(depth);
+    cout << "node" << printCount++ << "[" << "label = \"IntExpr\"];" << endl;
+    // cout << "<IntExpr>" << endl;
+    // 2    printIndent(depth + 1);
+    cout << "node" << printCount++ << "[" << "label = \"" << value << "\"];" << endl;
+    // cout << value << endl;
 }
 
 // Type NIntExpr::traverse(VarEnv* VEnv, TypeEnv* TEnv)
@@ -121,10 +135,12 @@ void NIntExpr::print(int depth) const
 
 void NNilExpr::print(int depth) const
 {
-    printIndent(depth);
-    cout << "<NilExpr>" << endl;
-    printIndent(depth + 1);
-    cout << "nil" << endl;
+    // 2    printIndent(depth);
+    cout << "node" << printCount++ << "[" << "label = \"NilExpr\"];" << endl;
+    // cout << "<NilExpr>" << endl;
+    // 2    printIndent(depth + 1);
+    cout << "node" << printCount++ << "[" << "label = \"nil\"];" << endl;
+    // cout << "nil" << endl;
 }
 
 // Type NNilExpr::traverse(VarEnv* VEnv, TypeEnv* TEnv)
@@ -134,8 +150,9 @@ void NNilExpr::print(int depth) const
 
 void NVarExpr::print(int depth) const
 {
-    printIndent(depth);
-    cout << "<VarExpr>" << endl;
+    // 2    printIndent(depth);
+    cout << "node" << printCount++ << "[" << "label = \"VarExpr\"];" << endl;
+    // cout << "<VarExpr>" << endl;
     //printIndent(depth + 1);
     var->print(depth + 1);
 }
@@ -149,13 +166,16 @@ void NOpExpr::print(int depth) const
 {
     static string op_name[10] =
         {"PLUS", "MINUS", "MUL", "DIV", "EQ", "NE", "LT", "LE", "GT", "GE"};
-    printIndent(depth);
-    cout << "<OpExpr>" << endl;
+    // 2    printIndent(depth);
+    cout << "node" << printCount++ << "[" << "label = \"OpExpr\"];" << endl;
+    // cout << "<OpExpr>" << endl;
     lhs->print(depth + 1);
-    printIndent(depth + 1);
-    cout << "<op>" << endl;
-    printIndent(depth + 2);
-    cout << op_name[op] << endl;
+    // 2    printIndent(depth + 1);
+    cout << "node" << printCount++ << "[" << "label = \"op\"];" << endl;
+    // cout << "<op>" << endl;
+    // 2    printIndent(depth + 2);
+    cout << "node" << printCount++ << "[" << "label = \"" << op_name[op] << "\"];" << endl;
+    // cout << op_name[op] << endl;
     rhs->print(depth + 1);
 }
 
@@ -166,8 +186,9 @@ void NOpExpr::print(int depth) const
 
 void NAssignExpr::print(int depth) const
 {
-    printIndent(depth);
-    cout << "<AssignExpr>" << endl;
+    // 2    printIndent(depth);
+    cout << "node" << printCount++ << "[" << "label = \"AssignExpr\"];" << endl;
+    // cout << "<AssignExpr>" << endl;
     var->print(depth + 1);
     rhs->print(depth + 1);
 }
@@ -179,8 +200,9 @@ void NAssignExpr::print(int depth) const
 
 void NRecordExpr::print(int depth) const
 {
-    printIndent(depth);
-    cout << "<RecordExpr>" << endl;
+    // 2    printIndent(depth);
+    cout << "node" << printCount++ << "[" << "label = \"RecordExpr\"];" << endl;
+    // cout << "<RecordExpr>" << endl;
     type->print(depth + 1);
     fields->print(depth + 1);
 }
@@ -192,8 +214,9 @@ void NRecordExpr::print(int depth) const
 
 void NArrayExpr::print(int depth) const
 {
-    printIndent(depth);
-    cout << "<ArrayExpr>" << endl;
+    // 2    printIndent(depth);
+    cout << "node" << printCount++ << "[" << "label = \"ArrayExpr\"];" << endl;
+    // cout << "<ArrayExpr>" << endl;
     type->print(depth + 1);
     size->print(depth + 1);
     initValue->print(depth + 1);
@@ -206,8 +229,9 @@ void NArrayExpr::print(int depth) const
 
 void NCallExpr::print(int depth) const
 {
-    printIndent(depth);
-    cout << "<CallExpr>" << endl;
+    // 2    printIndent(depth);
+    cout << "node" << printCount++ << "[" << "label = \"CallExpr\"];" << endl;
+    // cout << "<CallExpr>" << endl;
     func->print(depth + 1);
     if (args != NULL)
         args->print(depth + 1);
@@ -220,8 +244,9 @@ void NCallExpr::print(int depth) const
 
 void NSeqExpr::print(int depth) const
 {
-    printIndent(depth);
-    cout << "<SeqExpr>" << endl;
+    // 2    printIndent(depth);
+    cout << "node" << printCount++ << "[" << "label = \"SeqExpr\"];" << endl;
+    // cout << "<SeqExpr>" << endl;
     exprs->print(depth + 1);
 }
 
@@ -232,8 +257,9 @@ void NSeqExpr::print(int depth) const
 
 void NIfExpr::print(int depth) const
 {
-    printIndent(depth);
-    cout << "<IfExpr>" << endl;
+    // 2    printIndent(depth);
+    cout << "node" << printCount++ << "[" << "label = \"IfExpr\"];" << endl;
+    // cout << "<IfExpr>" << endl;
     test->print(depth + 1);
     thenClause->print(depth + 1);
     if (elseClause != NULL)
@@ -247,8 +273,9 @@ void NIfExpr::print(int depth) const
 
 void NWhileExpr::print(int depth) const
 {
-    printIndent(depth);
-    cout << "<WhileExpr>" << endl;
+    // 2    printIndent(depth);
+    cout << "node" << printCount++ << "[" << "label = \"WhileExpr\"];" << endl;
+    // cout << "<WhileExpr>" << endl;
     test->print(depth + 1);
     body->print(depth + 1);
 }
@@ -260,8 +287,9 @@ void NWhileExpr::print(int depth) const
 
 void NForExpr::print(int depth) const
 {
-    printIndent(depth);
-    cout << "<ForExpr>" << endl;
+    // 2    printIndent(depth);
+    cout << "node" << printCount++ << "[" << "label = \"ForExpr\"];" << endl;
+    // cout << "<ForExpr>" << endl;
     id->print(depth + 1);
     high->print(depth + 1);
     body->print(depth + 1);
@@ -274,8 +302,9 @@ void NForExpr::print(int depth) const
 
 void NBreakExpr::print(int depth) const
 {
-    printIndent(depth);
-    cout << "<BreakExpr>" << endl;
+    // 2    printIndent(depth);
+    cout << "node" << printCount++ << "[" << "label = \"BreakExpr\"];" << endl;
+    // cout << "<BreakExpr>" << endl;
 }
 
 // Type NBreakExpr::traverse(VarEnv* VEnv, TypeEnv* TEnv)
@@ -285,8 +314,9 @@ void NBreakExpr::print(int depth) const
 
 void NLetExpr::print(int depth) const
 {
-    printIndent(depth);
-    cout << "<LetExpr>" << endl;
+    // 2    printIndent(depth);
+    cout << "node" << printCount++ << "[" << "label = \"LetExpr\"];" << endl;
+    // cout << "<LetExpr>" << endl;
     decls->print(depth + 1);
     body->print(depth + 1);
 }
@@ -298,8 +328,9 @@ void NLetExpr::print(int depth) const
 
 void NFuncDecl::print(int depth) const
 {
-    printIndent(depth);
-    cout << "<FuncDecl>" << endl;
+    // 2    printIndent(depth);
+    cout << "node" << printCount++ << "[" << "label = \"FuncDecl\"];" << endl;
+    // cout << "<FuncDecl>" << endl;
     if (id != NULL)
     {
         id->print(depth + 1);
@@ -325,8 +356,9 @@ void NFuncDecl::print(int depth) const
 
 void NTypeDecl::print(int depth) const
 {
-    printIndent(depth);
-    cout << "<TypeDecl>" << endl;
+    // 2    printIndent(depth);
+    cout << "node" << printCount++ << "[" << "label = \"TypeDecl\"];" << endl;
+    // cout << "<TypeDecl>" << endl;
     id->print(depth + 1);
     type->print(depth + 1);
     if (next != NULL)
@@ -340,8 +372,9 @@ void NTypeDecl::print(int depth) const
 
 void NVarDecl::print(int depth) const
 {
-    printIndent(depth);
-    cout << "<VarDecl>" << endl;
+    // 2    printIndent(depth);
+    cout << "node" << printCount++ << "[" << "label = \"VarDecl\"];" << endl;
+    // cout << "<VarDecl>" << endl;
     id->print(depth + 1);
     if (type != NULL)
         type->print(depth + 1);
@@ -355,8 +388,9 @@ void NVarDecl::print(int depth) const
 
 void NArrayType::print(int depth) const
 {
-    printIndent(depth);
-    cout << "<ArrayType>" << endl;
+    // 2    printIndent(depth);
+    cout << "node" << printCount++ << "[" << "label = \"ArrayType\"];" << endl;
+    // cout << "<ArrayType>" << endl;
     id->print(depth + 1);
 }
 
@@ -367,15 +401,17 @@ void NArrayType::print(int depth) const
 
 void NRecordType::print(int depth) const
 {
-    printIndent(depth);
-    cout << "<RecordType>" << endl;
+    // 2    printIndent(depth);
+    cout << "node" << printCount++ << "[" << "label = \"RecordType\"];" << endl;
+    // cout << "<RecordType>" << endl;
     fields->print(depth + 1);
 }
 
 void NNameType::print(int depth) const
 {
-    printIndent(depth);
-    cout << "<NameType>" << endl;
+    // 2    printIndent(depth);
+    cout << "node" << printCount++ << "[" << "label = \"NameType\"];" << endl;
+    // cout << "<NameType>" << endl;
     id->print(depth + 1);
 }
 
@@ -386,8 +422,9 @@ void NNameType::print(int depth) const
 
 void NSimpleVar::print(int depth) const
 {
-    printIndent(depth);
-    cout << "<SimpleVar>" << endl;
+    // 2    printIndent(depth);
+    cout << "node" << printCount++ << "[" << "label = \"SimpleVar\"];" << endl;
+    // cout << "<SimpleVar>" << endl;
     id->print(depth + 1);
 }
 
@@ -398,8 +435,9 @@ void NSimpleVar::print(int depth) const
 
 void NFieldVar::print(int depth) const
 {
-    printIndent(depth);
-    cout << "<FieldVar>" << endl;
+    // 2    printIndent(depth);
+    cout << "node" << printCount++ << "[" << "label = \"FieldVar\"];" << endl;
+    // cout << "<FieldVar>" << endl;
     var->print(depth + 1);
     id->print(depth + 1);
 }
@@ -411,8 +449,9 @@ void NFieldVar::print(int depth) const
 
 void NSubscriptVar::print(int depth) const
 {
-    printIndent(depth);
-    cout << "<SubscriptVar>" << endl;
+    // 2    printIndent(depth);
+    cout << "node" << printCount++ << "[" << "label = \"SubscriptVar\"];" << endl;
+    // cout << "<SubscriptVar>" << endl;
     var->print(depth + 1);
     sub->print(depth + 1);
 }
