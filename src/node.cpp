@@ -7,7 +7,10 @@ void NExprList::print(int depth) const
 {
     printIndent(depth);
     cout << "<ExprList>" << endl;
-    head->print(depth + 1);
+    if (head != NULL)
+    {
+        head->print(depth + 1);
+    }
     if (next != NULL)
         next->print(depth + 1);
 }
@@ -24,7 +27,10 @@ void NDeclList::print(int depth) const
 {
     printIndent(depth);
     cout << "<DeclList>" << endl;
-    head->print(depth + 1);
+    if (head != NULL)
+    {
+        head->print(depth + 1);
+    }
     if (next != NULL)
         next->print(depth + 1);
 }
@@ -41,7 +47,10 @@ void NVarList::print(int depth) const
 {
     printIndent(depth);
     cout << "<VarList>" << endl;
-    head->print(depth + 1);
+    if (head != NULL)
+    {
+        head->print(depth + 1);
+    }
     if (next != NULL)
         next->print(depth + 1);
 }
@@ -291,9 +300,18 @@ void NFuncDecl::print(int depth) const
 {
     printIndent(depth);
     cout << "<FuncDecl>" << endl;
-    id->print(depth + 1);
-    params->print(depth + 1);
-    body->print(depth + 1);
+    if (id != NULL)
+    {
+        id->print(depth + 1);
+    }
+    if (params != NULL)
+    {
+        params->print(depth + 1);
+    }
+    if (body != NULL)
+    {
+        body->print(depth + 1);
+    }
     if (retType != NULL)
         retType->print(depth + 1);
     if (next != NULL)
