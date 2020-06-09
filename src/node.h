@@ -252,7 +252,7 @@ public:
 	}
 	virtual llvm::Value *codeGen(CodeGenContext &context);
 
-	const static int PLUS = 0, MINUS = 1, MUL = 2, DIV = 3, EQ = 4, NE = 5, LT = 6, LE = 7, GT = 8, GE = 9;
+	// const static int PLUS = 0, MINUS = 1, MUL = 2, DIV = 3, EQ = 4, NE = 5, LT = 6, LE = 7, GT = 8, GE = 9;
 	virtual void print(int depth) const;
 	virtual Type traverse(Semant *analyzer);
 };
