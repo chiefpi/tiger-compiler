@@ -28,6 +28,7 @@
 
 #include "env.h"
 #include "type.h"
+#include "node.h"
 
 // using namespace llvm;
 
