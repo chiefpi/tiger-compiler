@@ -8,7 +8,7 @@ LDFLAGS = `$(LLVMCONFIG) --ldflags` -lpthread -ldl -lz -lncurses -rdynamic
 LIBS = `$(LLVMCONFIG) --libs`
 
 clean:
-	rm myparser.cpp myparser.hpp myparser tokens.cpp
+	rm myparser.cpp myparser.hpp myparser tokens.cpp $(OBJS)
 
 myparser.cpp: myparser.y
 	bison -d -o $@ $^
@@ -20,6 +20,9 @@ tokens.cpp: mylexer.l myparser.hpp
 
 %.o: %.cpp
 	g++ -c $(CPPFLAGS) -o $@ $<
+
+codegen.o: codegen.cpp
+	g++ -D _DEBUG -c $(CPPFLAGS) -o $@ $<
 
 # myparser: main.cpp myparser.cpp tokens.cpp node.cpp semant.cpp type.cpp codegen.cpp
 # 	g++ -g -o $@ `llvm-config --libs --cppflags --ldflags` $^
