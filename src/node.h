@@ -90,8 +90,8 @@ public:
 	NExprList(int line, int index, NExpr *head, NExprList *next)
 		: head(head), next(next)
 	{
-		line = line;
-		index = index;
+		this->line = line;
+		this->index = index;
 	}
 	virtual llvm::Value *codeGen(CodeGenContext &context);
 	virtual void print(int depth) const;
@@ -111,8 +111,8 @@ public:
 	NDeclList(int line, int index, NDecl *head, NDeclList *next)
 		: head(head), next(next)
 	{
-		line = line;
-		index = index;
+		this->line = line;
+		this->index = index;
 	}
 	virtual llvm::Value *codeGen(CodeGenContext &context);
 	virtual void print(int depth) const;
@@ -132,8 +132,8 @@ public:
 	NVarList(int line, int index, NVar *head, NVarList *next)
 		: head(head), next(next)
 	{
-		line = line;
-		index = index;
+		this->line = line;
+		this->index = index;
 	}
 	virtual llvm::Value *codeGen(CodeGenContext &context);
 	virtual void print(int depth) const;
@@ -153,8 +153,8 @@ public:
 	NFieldTypeList(int line, int index, Symbol *id, Symbol *type, NFieldTypeList *next)
 		: id(id), type(type), next(next)
 	{
-		line = line;
-		index = index;
+		this->line = line;
+		this->index = index;
 	}
 	virtual llvm::Value *codeGen(CodeGenContext &context);
 	virtual void print(int depth) const;
@@ -170,8 +170,8 @@ public:
 	NFieldExprList(int line, int index, Symbol *id, NExpr *initValue, NFieldExprList *next)
 		: id(id), initValue(initValue), next(next)
 	{
-		line = line;
-		index = index;
+		this->line = line;
+		this->index = index;
 	}
 	virtual llvm::Value *codeGen(CodeGenContext &context);
 	virtual void print(int depth) const;
@@ -187,8 +187,8 @@ public:
 	NStrExpr(int line, int index, string val)
 		: value(val)
 	{
-		line = line;
-		index = index;
+		this->line = line;
+		this->index = index;
 	}
 	virtual llvm::Value *codeGen(CodeGenContext &context);
 	virtual void print(int depth) const;
@@ -202,8 +202,8 @@ public:
 	NIntExpr(int line, int index, long long val)
 		: value(val)
 	{
-		line = line;
-		index = index;
+		this->line = line;
+		this->index = index;
 	}
 	virtual llvm::Value *codeGen(CodeGenContext &context);
 	virtual void print(int depth) const;
@@ -215,8 +215,8 @@ class NNilExpr : public NExpr
 public:
 	NNilExpr(int line, int index)
 	{
-		line = line;
-		index = index;
+		this->line = line;
+		this->index = index;
 	}
 	virtual llvm::Value *codeGen(CodeGenContext &context);
 	virtual void print(int depth) const;
@@ -229,8 +229,8 @@ public:
 	NVar *var;
 	NVarExpr(int line, int index, NVar *var) : var(var)
 	{
-		line = line;
-		index = index;
+		this->line = line;
+		this->index = index;
 	}
 	virtual llvm::Value *codeGen(CodeGenContext &context);
 	virtual void print(int depth) const;
@@ -247,8 +247,8 @@ public:
 	NOpExpr(int line, int index, NExpr *lhs, int op, NExpr *rhs)
 		: lhs(lhs), op(op), rhs(rhs)
 	{
-		line = line;
-		index = index;
+		this->line = line;
+		this->index = index;
 	}
 	virtual llvm::Value *codeGen(CodeGenContext &context);
 
@@ -266,8 +266,8 @@ public:
 	NAssignExpr(int line, int index, NVar *var, NExpr *rhs)
 		: var(var), rhs(rhs)
 	{
-		line = line;
-		index = index;
+		this->line = line;
+		this->index = index;
 	}
 	virtual llvm::Value *codeGen(CodeGenContext &context);
 	virtual void print(int depth) const;
@@ -283,8 +283,8 @@ public:
 	NRecordExpr(int line, int index, Symbol *type, NFieldExprList *fields)
 		: type(type), fields(fields)
 	{
-		line = line;
-		index = index;
+		this->line = line;
+		this->index = index;
 	}
 	virtual llvm::Value *codeGen(CodeGenContext &context);
 	virtual void print(int depth) const;
@@ -301,8 +301,8 @@ public:
 	NArrayExpr(int line, int index, Symbol *type, NExpr *size, NExpr *initValue)
 		: type(type), size(size), initValue(initValue)
 	{
-		line = line;
-		index = index;
+		this->line = line;
+		this->index = index;
 	}
 	virtual llvm::Value *codeGen(CodeGenContext &context);
 	virtual void print(int depth) const;
@@ -318,14 +318,14 @@ public:
 	NCallExpr(int line, int index, Symbol *func, NExprList *args)
 		: func(func), args(args)
 	{
-		line = line;
-		index = index;
+		this->line = line;
+		this->index = index;
 	}
 	NCallExpr(int line, int index, Symbol *func)
 		: func(func)
 	{
-		line = line;
-		index = index;
+		this->line = line;
+		this->index = index;
 		args = NULL;
 	}
 	virtual llvm::Value *codeGen(CodeGenContext &context);
@@ -341,8 +341,8 @@ public:
 	NSeqExpr(int line, int index, NExprList *exprs)
 		: exprs(exprs)
 	{
-		line = line;
-		index = index;
+		this->line = line;
+		this->index = index;
 	}
 	virtual llvm::Value *codeGen(CodeGenContext &context);
 	virtual void print(int depth) const;
@@ -359,14 +359,14 @@ public:
 	NIfExpr(int line, int index, NExpr *test, NExpr *thencls, NExpr *elsecls)
 		: test(test), thenClause(thencls), elseClause(elsecls)
 	{
-		line = line;
-		index = index;
+		this->line = line;
+		this->index = index;
 	}
 	NIfExpr(int line, int index, NExpr *test, NExpr *thencls)
 		: test(test), thenClause(thencls)
 	{
-		line = line;
-		index = index;
+		this->line = line;
+		this->index = index;
 		elseClause = NULL;
 	}
 	virtual llvm::Value *codeGen(CodeGenContext &context);
@@ -383,8 +383,8 @@ public:
 	NWhileExpr(int line, int index, NExpr *test, NExpr *body)
 		: test(test), body(body)
 	{
-		line = line;
-		index = index;
+		this->line = line;
+		this->index = index;
 	}
 	virtual llvm::Value *codeGen(CodeGenContext &context);
 	virtual void print(int depth) const;
@@ -401,8 +401,8 @@ public:
 	NForExpr(int line, int index, NVarDecl *id, NExpr *high, NExpr *body)
 		: id(id), high(high), body(body)
 	{
-		line = line;
-		index = index;
+		this->line = line;
+		this->index = index;
 	}
 	virtual llvm::Value *codeGen(CodeGenContext &context);
 	virtual void print(int depth) const;
@@ -414,8 +414,8 @@ class NBreakExpr : public NExpr
 public:
 	NBreakExpr(int line, int index)
 	{
-		line = line;
-		index = index;
+		this->line = line;
+		this->index = index;
 	}
 	virtual llvm::Value *codeGen(CodeGenContext &context);
 	virtual void print(int depth) const;
@@ -431,8 +431,8 @@ public:
 	NLetExpr(int line, int index, NDeclList *decls, NExprList *body)
 		: decls(decls), body(body)
 	{
-		line = line;
-		index = index;
+		this->line = line;
+		this->index = index;
 	}
 	virtual llvm::Value *codeGen(CodeGenContext &context);
 	virtual void print(int depth) const;
@@ -453,14 +453,14 @@ public:
 	NFuncDecl(int line, int index, Symbol *id, NFieldTypeList *params, NExpr *body, NNameType *retType, NFuncDecl *next)
 		: id(id), params(params), body(body), retType(retType), next(next)
 	{
-		line = line;
-		index = index;
+		this->line = line;
+		this->index = index;
 	}
 	NFuncDecl(int line, int index, Symbol *id, NFieldTypeList *params, NExpr *body, NNameType *retType)
 		: id(id), params(params), body(body), retType(retType)
 	{
-		line = line;
-		index = index;
+		this->line = line;
+		this->index = index;
 		next = NULL;
 	}
 	virtual llvm::Value *codeGen(CodeGenContext &context);
@@ -478,14 +478,14 @@ public:
 	NTypeDecl(int line, int index, Symbol *id, NType *type, NTypeDecl *next)
 		: id(id), type(type), next(next)
 	{
-		line = line;
-		index = index;
+		this->line = line;
+		this->index = index;
 	}
 	NTypeDecl(int line, int index, Symbol *id, NType *type)
 		: id(id), type(type)
 	{
-		line = line;
-		index = index;
+		this->line = line;
+		this->index = index;
 		next = NULL;
 	}
 	virtual llvm::Value *codeGen(CodeGenContext &context);
@@ -504,14 +504,14 @@ public:
 	NVarDecl(int line, int index, Symbol *id, NExpr *initValue, NType *type)
 		: id(id), initValue(initValue), type(type)
 	{
-		line = line;
-		index = index;
+		this->line = line;
+		this->index = index;
 	}
 	NVarDecl(int line, int index, Symbol *id, NExpr *initValue)
 		: id(id), initValue(initValue)
 	{
-		line = line;
-		index = index;
+		this->line = line;
+		this->index = index;
 		type = NULL;
 	}
 
@@ -530,8 +530,8 @@ public:
 	NArrayType(int line, int index, Symbol *id)
 		: id(id)
 	{
-		line = line;
-		index = index;
+		this->line = line;
+		this->index = index;
 	}
 	virtual llvm::Value *codeGen(CodeGenContext &context);
 	virtual void print(int depth) const;
@@ -546,8 +546,8 @@ public:
 	NRecordType(int line, int index, NFieldTypeList *fields)
 		: fields(fields)
 	{
-		line = line;
-		index = index;
+		this->line = line;
+		this->index = index;
 	}
 	virtual llvm::Value *codeGen(CodeGenContext &context);
 	virtual void print(int depth) const;
@@ -562,8 +562,8 @@ public:
 	NNameType(int line, int index, Symbol *id)
 		: id(id)
 	{
-		line = line;
-		index = index;
+		this->line = line;
+		this->index = index;
 	}
 	virtual llvm::Value *codeGen(CodeGenContext &context);
 	virtual void print(int depth) const;
@@ -580,8 +580,8 @@ public:
 	NSimpleVar(int line, int index, Symbol *id)
 		: id(id)
 	{
-		line = line;
-		index = index;
+		this->line = line;
+		this->index = index;
 	}
 	virtual llvm::Value *codeGen(CodeGenContext &context);
 	virtual void print(int depth) const;
@@ -597,8 +597,8 @@ public:
 	NFieldVar(int line, int index, NVar *var, Symbol *id)
 		: var(var), id(id)
 	{
-		line = line;
-		index = index;
+		this->line = line;
+		this->index = index;
 	}
 	virtual llvm::Value *codeGen(CodeGenContext &context);
 	virtual void print(int depth) const;
@@ -614,8 +614,8 @@ public:
 	NSubscriptVar(int line, int index, NVar *var, NExpr *sub)
 		: var(var), sub(sub)
 	{
-		line = line;
-		index = index;
+		this->line = line;
+		this->index = index;
 	}
 	virtual llvm::Value *codeGen(CodeGenContext &context);
 	virtual void print(int depth) const;

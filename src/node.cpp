@@ -203,14 +203,14 @@ Type NOpExpr::traverse(Semant *analyzer)
     case MUL:
     case DIV:
         assertpred(lType.type == Type::TInt && rType.type == Type::TInt,
-               "Invalid operand type: int expected");
+                   "Invalid operand type: int expected");
         break;
     case EQ:
     case NE:
         assertpred(lType.type != Type::TVoid && rType.type != Type::TVoid,
-               "Invalid operand type: unable to compare void");
+                   "Invalid operand type: unable to compare void");
         assertpred(!(lType.type == Type::TNil && rType.type != Type::TRecord) && !(lType.type == Type::TRecord && rType.type != Type::TNil),
-               "Invalid operand type: unable to compare nil to non-record type");
+                   "Invalid operand type: unable to compare nil to non-record type");
         assertpred(checkTypeEquiv(&lType, &rType), "Invalid operand type: unable to compare different types");
         break;
     case LT:
@@ -218,7 +218,7 @@ Type NOpExpr::traverse(Semant *analyzer)
     case GT:
     case GE:
         assertpred((lType.type == Type::TInt && rType.type == Type::TInt) || (lType.type == Type::TString && rType.type == Type::TString),
-               "Invalid operand type: unable to compare types other then int and string");
+                   "Invalid operand type: unable to compare types other then int and string");
         break;
     }
     return IntType();
@@ -273,10 +273,10 @@ Type NRecordExpr::traverse(Semant *analyzer)
         for (size_t i = 0; i < vec_fields.size(); i++)
         {
             if (assertpred(checkTypeEquiv(vec_fields[i].second, paramFields[i].second),
-                       "Invalid Record Expression: Mismatched Parameter Type"))
+                           "Invalid Record Expression: Mismatched Parameter Type"))
                 break;
             if (assertpred(vec_fields[i].first == paramFields[i].first,
-                       "Invalid Record Expression: Mismatched Parameter Name"))
+                           "Invalid Record Expression: Mismatched Parameter Name"))
                 break;
         }
     };
@@ -334,7 +334,7 @@ Type NCallExpr::traverse(Semant *analyzer)
         for (size_t i = 0; i < vec_argTypes.size(); i++)
         {
             if (assertpred(checkTypeEquiv(&vec_argTypes[i], &paramTypes[i]),
-                       "Invalid Function Call: Mismatched Parameter Type"))
+                           "Invalid Function Call: Mismatched Parameter Type"))
                 break;
         }
     };
@@ -488,7 +488,7 @@ Type NFuncDecl::traverse(Semant *analyzer)
 {
     // check redeclaration
     assertpred(!analyzer->checkFuncRedeclare(*id),
-           "Invalid Function Declaration: Function Redeclaration");
+               "Invalid Function Declaration: Function Redeclaration");
     NFieldTypeList *thisParam = params;
     vector<Type> *vec_params = new vector<Type>();
     vector<RecordType::Field> *vec_fields = new vector<RecordType::Field>();
@@ -510,7 +510,7 @@ Type NFuncDecl::traverse(Semant *analyzer)
         analyzer->pushVar(*field.first, *field.second);
     Type realRetTypeTy = body->traverse(analyzer);
     assertpred(checkTypeEquiv(&realRetTypeTy, &retTypeTy),
-           "Invalid Function Declaration: Unmatched Return Value Type");
+               "Invalid Function Declaration: Unmatched Return Value Type");
     analyzer->endScope();
 
     return VoidType();
@@ -530,9 +530,10 @@ void NTypeDecl::print(int depth) const
 
 Type NTypeDecl::traverse(Semant *analyzer)
 {
-    assertpred(analyzer->checkTypeRedeclare(*id),
-           "Invalid Type Declaration: Type Redeclaration");
-    Type *typeTy = new Type(type->traverse(analyzer));
+    assertpred(!analyzer->checkTypeRedeclare(*id),
+               "Invalid Type Declaration: Type Redeclaration");
+    Type temp = type->traverse(analyzer);
+    Type *typeTy = new Type(temp);
     // TODO: check circular definition
     analyzer->pushType(*id, typeTy);
     if (next != NULL)
@@ -563,7 +564,7 @@ Type NVarDecl::traverse(Semant *analyzer)
         {
             Type *typeTy = new Type(type->traverse(analyzer));
             if (assertpred(checkTypeEquiv(initValueTy, typeTy),
-                       "Invalid Variable Declaration: Unmatched Type"))
+                           "Invalid Variable Declaration: Unmatched Type"))
             {
                 analyzer->pushVar(*id, *typeTy); // explicit
             };
@@ -571,7 +572,7 @@ Type NVarDecl::traverse(Semant *analyzer)
         else
         {
             if (assertpred(initValueTy->type != Type::TNil,
-                       "Invalid Variable Declaration: Nil Cannot be Assigned to implicit variables"))
+                           "Invalid Variable Declaration: Nil Cannot be Assigned to implicit variables"))
             {
                 analyzer->pushVar(*id, *initValueTy); // implicit
             };
@@ -668,7 +669,7 @@ Type NFieldVar::traverse(Semant *analyzer)
     if (assertpred(varTy.type == Type::TRecord, "Undefined Variable: Record Expected"))
     {
         assertpred(((RecordType *)&varTy)->findSymbol(id),
-               "Undefined Variable: No Correspondence in Field List");
+                   "Undefined Variable: No Correspondence in Field List");
     }
     return varTy;
 }
