@@ -480,8 +480,8 @@ void NFuncDecl::print(int depth) const
     }
     if (retType != NULL)
         retType->print(depth + 1);
-    if (next != NULL)
-        next->print(depth + 1);
+    // if (next != NULL)
+    //     next->print(depth + 1);
 }
 
 Type NFuncDecl::traverse(Semant *analyzer)
@@ -524,8 +524,8 @@ void NTypeDecl::print(int depth) const
     // cout << "<TypeDecl>" << endl;
     id->print(depth + 1);
     type->print(depth + 1);
-    if (next != NULL)
-        next->print(depth + 1);
+    // if (next != NULL)
+    //     next->print(depth + 1);
 }
 
 Type NTypeDecl::traverse(Semant *analyzer)

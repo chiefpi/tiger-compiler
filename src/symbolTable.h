@@ -22,9 +22,9 @@ public:
     void enterScope();
     void quitScope();
     void resetScope();
-    deque<TableType> stack;
+
 protected:
-    
+    deque<TableType> stack;
 };
 
 template <typename T>
