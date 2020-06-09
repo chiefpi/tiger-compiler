@@ -7,11 +7,9 @@ using namespace std;
 
 class Symbol
 {
-private:
-    string id = nullptr;
-
 public:
-    Symbol() : id(nullptr) {}
+    string id;
+    Symbol() {}
     Symbol(string name) : id(name)
     {
     }

@@ -1,33 +1,30 @@
-#include "symbolTable.h"
 #pragma once
-#include "type.h"
-#include "env.h"
 #include "node.h"
+
+Entry *makeFuncEntry(Type, int, ...);
 
 class Semant
 {
 public:
-    Semant()
-    {
-        VEnv = initVarEnv();
-        TEnv = initTypeEnv();
-    }
-    void analyze(NExpr *root)
-    {
-        root->traverse(&VEnv, &TEnv);
-    }
+    Semant();
+    void beginScope();
+    void endScope();
+    bool checkTypeRedeclare(Symbol id);
+    bool checkFuncRedeclare(Symbol id);
+    Type *findType(Symbol id);
+    Entry *findEntry(Symbol id);
+    void pushType(Symbol id, Type *type);
+    void pushFunc(Symbol id, Type retType, vector<Type> *paramTypes);
+    void pushVar(Symbol id, Type type);
+    void beginLoop();
+    void endLoop();
+    bool canBreak();
 
 private:
-    static VarEnv VEnv;
-    static TypeEnv TEnv;
-    void enterScope()
-    {
-        VEnv.enterScope();
-        TEnv.enterScope();
-    }
-    void quitScope()
-    {
-        VEnv.quitScope();
-        TEnv.quitScope();
-    }
+    VarEnv *VEnv;
+    TypeEnv *TEnv;
+    static int loopCount;
+    void initTypeEnv();
+    void initVarEnv();
+    vector<Type> *makeParamTypes(Type *, Type *, Type *);
 };
