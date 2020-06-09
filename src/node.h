@@ -5,7 +5,7 @@
 #include <iostream>
 #include <vector>
 #include <string>
-//#include <llvm/IR/Value.h>
+#include <llvm/IR/Value.h>
 
 using namespace std;
 
@@ -53,7 +53,7 @@ public:
 	int line;
 	int index;
 	virtual ~Node() {}
-	//virtual llvm::Value *codeGen(CodeGenContext &context) { return NULL; }
+	virtual llvm::Value *codeGen(CodeGenContext &context) { return NULL; }
 	virtual void print(int depth = 0) const = 0;
 	virtual Type traverse(Semant *analyzer) = 0;
 	void reportErr(string msg)
@@ -92,7 +92,7 @@ public:
 		line = line;
 		index = index;
 	}
-	//virtual llvm::Value *codeGen(CodeGenContext &context);
+	virtual llvm::Value *codeGen(CodeGenContext &context);
 	virtual void print(int depth) const;
 	virtual Type traverse(Semant *analyzer);
 };
@@ -113,7 +113,7 @@ public:
 		line = line;
 		index = index;
 	}
-	//virtual llvm::Value *codeGen(CodeGenContext &context);
+	virtual llvm::Value *codeGen(CodeGenContext &context);
 	virtual void print(int depth) const;
 	virtual Type traverse(Semant *analyzer);
 };
@@ -134,7 +134,7 @@ public:
 		line = line;
 		index = index;
 	}
-	//virtual llvm::Value *codeGen(CodeGenContext &context);
+	virtual llvm::Value *codeGen(CodeGenContext &context);
 	virtual void print(int depth) const;
 	virtual Type traverse(Semant *analyzer);
 };
@@ -155,7 +155,7 @@ public:
 		line = line;
 		index = index;
 	}
-	//virtual llvm::Value *codeGen(CodeGenContext &context);
+	virtual llvm::Value *codeGen(CodeGenContext &context);
 	virtual void print(int depth) const;
 	virtual Type traverse(Semant *analyzer);
 };
@@ -172,7 +172,7 @@ public:
 		line = line;
 		index = index;
 	}
-	//virtual llvm::Value *codeGen(CodeGenContext &context);
+	virtual llvm::Value *codeGen(CodeGenContext &context);
 	virtual void print(int depth) const;
 	virtual Type traverse(Semant *analyzer);
 };
@@ -189,7 +189,7 @@ public:
 		line = line;
 		index = index;
 	}
-	//virtual llvm::Value *codeGen(CodeGenContext &context);
+	virtual llvm::Value *codeGen(CodeGenContext &context);
 	virtual void print(int depth) const;
 	virtual Type traverse(Semant *analyzer);
 };
@@ -204,7 +204,7 @@ public:
 		line = line;
 		index = index;
 	}
-	//virtual llvm::Value *codeGen(CodeGenContext &context);
+	virtual llvm::Value *codeGen(CodeGenContext &context);
 	virtual void print(int depth) const;
 	virtual Type traverse(Semant *analyzer);
 };
@@ -217,7 +217,7 @@ public:
 		line = line;
 		index = index;
 	}
-	//virtual llvm::Value *codeGen(CodeGenContext &context);
+	virtual llvm::Value *codeGen(CodeGenContext &context);
 	virtual void print(int depth) const;
 	virtual Type traverse(Semant *analyzer);
 };
@@ -231,7 +231,7 @@ public:
 		line = line;
 		index = index;
 	}
-	//virtual llvm::Value *codeGen(CodeGenContext &context);
+	virtual llvm::Value *codeGen(CodeGenContext &context);
 	virtual void print(int depth) const;
 	virtual Type traverse(Semant *analyzer);
 };
@@ -249,7 +249,7 @@ public:
 		line = line;
 		index = index;
 	}
-	//virtual llvm::Value *codeGen(CodeGenContext &context);
+	virtual llvm::Value *codeGen(CodeGenContext &context);
 
 	const static int PLUS = 0, MINUS = 1, MUL = 2, DIV = 3, EQ = 4, NE = 5, LT = 6, LE = 7, GT = 8, GE = 9;
 	virtual void print(int depth) const;
@@ -268,7 +268,7 @@ public:
 		line = line;
 		index = index;
 	}
-	//virtual llvm::Value *codeGen(CodeGenContext &context);
+	virtual llvm::Value *codeGen(CodeGenContext &context);
 	virtual void print(int depth) const;
 	virtual Type traverse(Semant *analyzer);
 };
@@ -285,7 +285,7 @@ public:
 		line = line;
 		index = index;
 	}
-	//virtual llvm::Value *codeGen(CodeGenContext &context);
+	virtual llvm::Value *codeGen(CodeGenContext &context);
 	virtual void print(int depth) const;
 	virtual Type traverse(Semant *analyzer);
 };
@@ -303,7 +303,7 @@ public:
 		line = line;
 		index = index;
 	}
-	//virtual llvm::Value *codeGen(CodeGenContext &context);
+	virtual llvm::Value *codeGen(CodeGenContext &context);
 	virtual void print(int depth) const;
 	virtual Type traverse(Semant *analyzer);
 };
@@ -327,7 +327,7 @@ public:
 		index = index;
 		args = NULL;
 	}
-	//virtual llvm::Value *codeGen(CodeGenContext &context);
+	virtual llvm::Value *codeGen(CodeGenContext &context);
 	virtual void print(int depth) const;
 	virtual Type traverse(Semant *analyzer);
 };
@@ -343,7 +343,7 @@ public:
 		line = line;
 		index = index;
 	}
-	//virtual llvm::Value *codeGen(CodeGenContext &context);
+	virtual llvm::Value *codeGen(CodeGenContext &context);
 	virtual void print(int depth) const;
 	virtual Type traverse(Semant *analyzer);
 };
@@ -368,7 +368,7 @@ public:
 		index = index;
 		elseClause = NULL;
 	}
-	//virtual llvm::Value *codeGen(CodeGenContext &context);
+	virtual llvm::Value *codeGen(CodeGenContext &context);
 	virtual void print(int depth) const;
 	virtual Type traverse(Semant *analyzer);
 };
@@ -385,7 +385,7 @@ public:
 		line = line;
 		index = index;
 	}
-	//virtual llvm::Value *codeGen(CodeGenContext &context);
+	virtual llvm::Value *codeGen(CodeGenContext &context);
 	virtual void print(int depth) const;
 	virtual Type traverse(Semant *analyzer);
 };
@@ -403,7 +403,7 @@ public:
 		line = line;
 		index = index;
 	}
-	//virtual llvm::Value *codeGen(CodeGenContext &context);
+	virtual llvm::Value *codeGen(CodeGenContext &context);
 	virtual void print(int depth) const;
 	virtual Type traverse(Semant *analyzer);
 };
@@ -416,7 +416,7 @@ public:
 		line = line;
 		index = index;
 	}
-	//virtual llvm::Value *codeGen(CodeGenContext &context);
+	virtual llvm::Value *codeGen(CodeGenContext &context);
 	virtual void print(int depth) const;
 	virtual Type traverse(Semant *analyzer);
 };
@@ -433,7 +433,7 @@ public:
 		line = line;
 		index = index;
 	}
-	//virtual llvm::Value *codeGen(CodeGenContext &context);
+	virtual llvm::Value *codeGen(CodeGenContext &context);
 	virtual void print(int depth) const;
 	virtual Type traverse(Semant *analyzer);
 };
@@ -462,7 +462,7 @@ public:
 		index = index;
 		next = NULL;
 	}
-	//virtual llvm::Value *codeGen(CodeGenContext &context);
+	virtual llvm::Value *codeGen(CodeGenContext &context);
 	virtual void print(int depth) const;
 	virtual Type traverse(Semant *analyzer);
 };
@@ -487,7 +487,7 @@ public:
 		index = index;
 		next = NULL;
 	}
-	//virtual llvm::Value *codeGen(CodeGenContext &context);
+	virtual llvm::Value *codeGen(CodeGenContext &context);
 	virtual void print(int depth) const;
 	virtual Type traverse(Semant *analyzer);
 };
@@ -514,7 +514,7 @@ public:
 		type = NULL;
 	}
 
-	//virtual llvm::Value *codeGen(CodeGenContext &context);
+	virtual llvm::Value *codeGen(CodeGenContext &context);
 	virtual void print(int depth) const;
 	virtual Type traverse(Semant *analyzer);
 };
@@ -532,7 +532,7 @@ public:
 		line = line;
 		index = index;
 	}
-	//virtual llvm::Value *codeGen(CodeGenContext &context);
+	virtual llvm::Value *codeGen(CodeGenContext &context);
 	virtual void print(int depth) const;
 	virtual Type traverse(Semant *analyzer);
 };
@@ -548,7 +548,7 @@ public:
 		line = line;
 		index = index;
 	}
-	//virtual llvm::Value *codeGen(CodeGenContext &context);
+	virtual llvm::Value *codeGen(CodeGenContext &context);
 	virtual void print(int depth) const;
 	virtual Type traverse(Semant *analyzer);
 };
@@ -564,7 +564,7 @@ public:
 		line = line;
 		index = index;
 	}
-	//virtual llvm::Value *codeGen(CodeGenContext &context);
+	virtual llvm::Value *codeGen(CodeGenContext &context);
 	virtual void print(int depth) const;
 	virtual Type traverse(Semant *analyzer);
 };
@@ -582,7 +582,7 @@ public:
 		line = line;
 		index = index;
 	}
-	//virtual llvm::Value *codeGen(CodeGenContext &context);
+	virtual llvm::Value *codeGen(CodeGenContext &context);
 	virtual void print(int depth) const;
 	virtual Type traverse(Semant *analyzer);
 };
@@ -599,7 +599,7 @@ public:
 		line = line;
 		index = index;
 	}
-	//virtual llvm::Value *codeGen(CodeGenContext &context);
+	virtual llvm::Value *codeGen(CodeGenContext &context);
 	virtual void print(int depth) const;
 	virtual Type traverse(Semant *analyzer);
 };
@@ -616,7 +616,7 @@ public:
 		line = line;
 		index = index;
 	}
-	//virtual llvm::Value *codeGen(CodeGenContext &context);
+	virtual llvm::Value *codeGen(CodeGenContext &context);
 	virtual void print(int depth) const;
 	virtual Type traverse(Semant *analyzer);
 };

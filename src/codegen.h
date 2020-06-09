@@ -2,6 +2,7 @@
 #pragma once
 
 #include <stack>
+#include <tuple>
 #include <typeinfo>
 
 #include <llvm/IR/Module.h>
@@ -26,8 +27,6 @@
 #include <llvm/ExecutionEngine/GenericValue.h>
 
 #include "env.h"
-#include "symbol.h"
-#include "symbolTable.h"
 
 using namespace llvm;
 
@@ -41,25 +40,30 @@ public:
 };
 
 class CodeGenContext {
-    std::stack<CodeGenBlock*> blocks;
+    std::stack<CodeGenBlock *> blocks;
     Function *mainFunction;
 
 public:
     Module *module;
-    VarEnv venv;
-    TypeEnv tenv;
+    SymbolTable<llvm::Value> venv;
+    SymbolTable<llvm::Type> tenv;
+    std::stack<std::tuple<BasicBlock *, BasicBlock *>> loopstk;
 
     CodeGenContext() {
         module = new Module("main", MyContext);
-        venv = initVarEnv();
-        tenv = initTypeEnv();
+        // venv = initLVarEnv();
+        // tenv = initLTypeEnv();
     }
 
     void generateCode(NExpr &root);
     GenericValue runCode();
 
-    Type *typeOf(const Symbol &sb);
-    
+    llvm::Type *typeOf(Type *type);
+    Function *createIntrinsicFunction(
+        const std::string &name,
+        const std::vector<llvm::Type *> &args,
+        llvm::Type *retType);
+
     // std::map<std::string, Value*> &locals() {
     //     return blocks.top()->locals;
     // }
