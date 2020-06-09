@@ -130,6 +130,10 @@ llvm::Value *NNilExpr::codeGen(CodeGenContext &context) { // TODO: verify null p
     return llvm::ConstantPointerNull::get(llvm::PointerType::getUnqual(llvm::StructType::get(MyContext)));
 }
 
+llvm::Value *NVarExpr::codeGen(CodeGenContext &context) {
+
+}
+
 llvm::Value *NOpExpr::codeGen(CodeGenContext &context) {
 // #ifdef DEBUG
 //     std::cout << "Creating binary operation " << op << std::endl;
@@ -145,11 +149,11 @@ llvm::Value *NOpExpr::codeGen(CodeGenContext &context) {
         case OR: minst = llvm::Instruction::Or; goto math;
         // case XOR: inst = llvm::Instruction::Xor; goto math;
         case EQ: cinst = llvm::ICmpInst::ICMP_EQ; goto cmp;
-        case NEQ: cinst = llvm::ICmpInst::ICMP_NE; goto cmp; 
-        case LT: cinst = llvm::ICmpInst::ICMP_SLT; goto cmp; 
-        case LE: cinst = llvm::ICmpInst::ICMP_SLE; goto cmp; 
-        case GT: cinst = llvm::ICmpInst::ICMP_SGT; goto cmp; 
-        case GE: cinst = llvm::ICmpInst::ICMP_SGE; goto cmp; 
+        case NEQ: cinst = llvm::ICmpInst::ICMP_NE; goto cmp;
+        case LT: cinst = llvm::ICmpInst::ICMP_SLT; goto cmp;
+        case LE: cinst = llvm::ICmpInst::ICMP_SLE; goto cmp;
+        case GT: cinst = llvm::ICmpInst::ICMP_SGT; goto cmp;
+        case GE: cinst = llvm::ICmpInst::ICMP_SGE; goto cmp;
     }
     return nullptr;
 math:
@@ -201,13 +205,13 @@ llvm::Value *NRecordExpr::codeGen(CodeGenContext &context) { // TODO
     return var;
 }
 
-// llvm::Value *NArrayExpr::codeGen(CodeGenContext &context) {
+llvm::Value *NArrayExpr::codeGen(CodeGenContext &context) {
 // // #ifdef DEBUG
 // //     std::cout << "Creating array" << std::endl;
 // // #endif
 //     llvm::ArrayType* arrayTy = llvm::ArrayType::get(llvm::IntegerType::get(MyContext, 64), size->codeGen(context)); // TODO: int to type
 //     return new llvm::AllocaInst(arrayTy, "", context.currentBlock());
-// }
+}
 
 llvm::Value *NCallExpr::codeGen(CodeGenContext &context) {
 // #ifdef DEBUG
@@ -383,7 +387,7 @@ llvm::Value *NLetExpr::codeGen(CodeGenContext &context) {
     return result;
 }
 
-// llvm::Value *NFuncDecl::codeGen(CodeGenContext &context) {
+llvm::Value *NFuncDecl::codeGen(CodeGenContext &context) {
 // // #ifdef DEBUG
 // //     std::cout << "Creating function " << id.name << std::endl;
 // // #endif
@@ -418,7 +422,7 @@ llvm::Value *NLetExpr::codeGen(CodeGenContext &context) {
 //     context.tenv.quitScope();
 
 //     return function;
-// }
+}
 
 llvm::Value *NTypeDecl::codeGen(CodeGenContext &context) {
 // #ifdef DEBUG
@@ -427,7 +431,7 @@ llvm::Value *NTypeDecl::codeGen(CodeGenContext &context) {
 
 }
 
-// llvm::Value *NVarDecl::codeGen(CodeGenContext &context) {
+llvm::Value *NVarDecl::codeGen(CodeGenContext &context) {
 // // #ifdef DEBUG
 // //     std::cout << "Creating variable declaration " << type.name << " " << id.name << std::endl;
 // // #endif
@@ -438,7 +442,7 @@ llvm::Value *NTypeDecl::codeGen(CodeGenContext &context) {
 //         assn.codeGen(context);
 //     }
 //     return alloc;
-// }
+}
 
 llvm::Value *NArrayType::codeGen(CodeGenContext &context) {
 // #ifdef DEBUG
@@ -466,7 +470,7 @@ llvm::Value *NSimpleVar::codeGen(CodeGenContext &context) {
     return context.venv.findAll(*id);
 }
 
-// llvm::Value *NFieldVar::codeGen(CodeGenContext &context) {
+llvm::Value *NFieldVar::codeGen(CodeGenContext &context) {
 // // #ifdef DEBUG
 // //     std::cout << "Creating field variable " << var.id << " " << id << std::endl;
 // // #endif
@@ -475,9 +479,9 @@ llvm::Value *NSimpleVar::codeGen(CodeGenContext &context) {
 //         builder.CreateLoad(var->codeGen(context), ""),
 //         llvm::ConstantInt::get(llvm::Type::getInt64Ty(MyContext), llvm::APInt(64, id)),
 //         "");
-// }
+}
 
-// llvm::Value *NSubscriptVar::codeGen(CodeGenContext &context) {
+llvm::Value *NSubscriptVar::codeGen(CodeGenContext &context) {
 // // #ifdef DEBUG
 // //     std::cout << "Creating subscription variable" << std::endl;
 // // #endif
@@ -486,7 +490,7 @@ llvm::Value *NSimpleVar::codeGen(CodeGenContext &context) {
 //         builder.CreateLoad(var->codeGen(context), ""),
 //         sub->codeGen(context),
 //         "");
-// }
+}
 
 // llvm::Value *Symbol::codeGen(CodeGenContext& context) {
 // // #ifdef DEBUG
