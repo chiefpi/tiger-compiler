@@ -27,52 +27,49 @@
 #include <llvm/ExecutionEngine/GenericValue.h>
 
 #include "env.h"
+#include "type.h"
 
-using namespace llvm;
+// using namespace llvm;
 
-static LLVMContext MyContext;
-static IRBuilder<> builder{MyContext};
+static llvm::LLVMContext MyContext;
+static llvm::IRBuilder<> builder{MyContext};
 
 class CodeGenBlock {
 public:
-    BasicBlock *block;
-    Value *returnValue;
+    llvm::BasicBlock *block;
+    llvm::Value *returnValue;
 };
 
 class CodeGenContext {
     std::stack<CodeGenBlock *> blocks;
-    Function *mainFunction;
+    llvm::Function *mainFunction;
 
 public:
-    Module *module;
+    llvm::Module *module;
     SymbolTable<llvm::Value> venv;
     SymbolTable<llvm::Type> tenv;
-    std::stack<std::tuple<BasicBlock *, BasicBlock *>> loopstk;
+    std::stack<std::tuple<llvm::BasicBlock *, llvm::BasicBlock *>> loopstk;
 
     CodeGenContext() {
-        module = new Module("main", MyContext);
+        module = new llvm::Module("main", MyContext);
         // venv = initLVarEnv();
         // tenv = initLTypeEnv();
     }
 
-    void generateCode(NExpr &root);
-    GenericValue runCode();
+    void generateCode(NExpr *root);
+    llvm::GenericValue runCode();
 
-    llvm::Type *typeOf(Type *type);
-    Function *createIntrinsicFunction(
+    llvm::Type *castType(Type *type);
+    llvm::Function *createIntrinsicFunction(
         const std::string &name,
         const std::vector<llvm::Type *> &args,
         llvm::Type *retType);
 
-    // std::map<std::string, Value*> &locals() {
-    //     return blocks.top()->locals;
-    // }
-
     /* Block stack operations */
-    BasicBlock *currentBlock() {
+    llvm::BasicBlock *currentBlock() {
         return blocks.top()->block;
     }
-    void pushBlock(BasicBlock *block) {
+    void pushBlock(llvm::BasicBlock *block) {
         blocks.push(new CodeGenBlock());
         blocks.top()->returnValue = NULL;
         blocks.top()->block = block;
@@ -82,10 +79,10 @@ public:
         blocks.pop();
         delete top;
     }
-    void setCurrentReturnValue(Value *value) {
+    void setCurrentReturnValue(llvm::Value *value) {
         blocks.top()->returnValue = value;
     }
-    Value* getCurrentReturnValue() {
+    llvm::Value* getCurrentReturnValue() {
         return blocks.top()->returnValue;
     }
 };
