@@ -1,6 +1,7 @@
 #include <iostream>
 //#include "codegen.h"
 #include "node.h"
+#include "semant.h"
 
 using namespace std;
 
@@ -13,6 +14,8 @@ int main(int argc, char **argv)
 {
 	yyparse();
 	root->print(0);
+	Semant analyzer = Semant();
+	root->traverse(&analyzer);
 	// cout << programBlock << endl;
 	// see http://comments.gmane.org/gmane.comp.compilers.llvm.devel/33877
 	// InitializeNativeTarget();

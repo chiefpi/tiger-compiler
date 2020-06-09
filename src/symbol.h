@@ -5,24 +5,27 @@
 
 using namespace std;
 
+extern int printCount;
 class Symbol
 {
-private:
-    string id = nullptr;
-
 public:
-    Symbol() : id(nullptr) {}
+    string id;
+    Symbol() {}
     Symbol(string name) : id(name)
     {
     }
     void print(int depth) const
     {
-        for (int i = 0; i < depth; i++)
-            cout << "	";
-        cout << "<id>" << endl;
-        for (int i = 0; i < depth + 1; i++)
-            cout << "	";
-        cout << id << endl;
+        cout << "node" << printCount++ << "["
+             << "label = \"id\"];" << endl;
+        cout << "node" << printCount++ << "["
+             << "label = \""<< id <<"\"];" << endl;
+        // for (int i = 0; i < depth; i++)
+        //     cout << "	";
+        // cout << "<id>" << endl;
+        // for (int i = 0; i < depth + 1; i++)
+        //     cout << "	";
+        // cout << id << endl;
     }
     bool operator==(const Symbol &other) const
     {

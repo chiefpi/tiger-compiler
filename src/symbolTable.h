@@ -16,14 +16,15 @@ public:
     ~SymbolTable();
     T *findAll(Symbol id);
     T *find(Symbol id);
+    T *findBack(Symbol id);
     void push(Symbol id, T *value);
     void pop(Symbol id);
     void enterScope();
     void quitScope();
     void resetScope();
-
-protected:
     deque<TableType> stack;
+protected:
+    
 };
 
 template <typename T>
@@ -44,7 +45,7 @@ T *SymbolTable<T>::findAll(Symbol id)
     for (auto s : stack)
         if (s[id])
             return s[id];
-    return stack.front()[id];
+    return NULL;
 }
 
 template <typename T>
@@ -52,7 +53,15 @@ T *SymbolTable<T>::find(Symbol id)
 {
     if (stack.front()[id])
         return stack.front()[id];
-    return stack.front()[id];
+    return NULL;
+}
+
+template <typename T>
+T *SymbolTable<T>::findBack(Symbol id)
+{
+    if (stack.back()[id])
+        return stack.back()[id];
+    return NULL;
 }
 
 template <typename T>

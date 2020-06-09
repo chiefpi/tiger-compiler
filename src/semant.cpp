@@ -1,34 +1,31 @@
 #include "semant.h"
 #include <cstdarg>
-
-Entry *makeFuncEntry(Type retType, int count = 0, ...)
-{
-    vector<Type> *params = new vector<Type>();
-    va_list args;
-    va_start(args, count);
-    for (int i = 0; i < count; i++)
-        params->push_back(va_arg(args, Type));
-
-    return new Entry(KFunc, retType, params);
-}
-
-bool isEquivType(Type* a, Type* b);
-
-
 void Semant::initVarEnv()
 {
     VEnv = new VarEnv();
-    VEnv->push(Symbol("print"), makeFuncEntry(VoidType(), 1, StringType()));
-    VEnv->push(Symbol("printi"), makeFuncEntry(VoidType(), 1, IntType()));
-    VEnv->push(Symbol("flush"), makeFuncEntry(VoidType()));
-    VEnv->push(Symbol("getchar"), makeFuncEntry(StringType()));
-    VEnv->push(Symbol("ord"), makeFuncEntry(IntType(), 1, StringType()));
-    VEnv->push(Symbol("chr"), makeFuncEntry(StringType(), 1, IntType()));
-    VEnv->push(Symbol("size"), makeFuncEntry(IntType(), 1, StringType()));
-    VEnv->push(Symbol("substring"), makeFuncEntry(StringType(), 3, StringType(), IntType(), IntType()));
-    VEnv->push(Symbol("concat"), makeFuncEntry(StringType(), 2, StringType(), StringType()));
-    VEnv->push(Symbol("not"), makeFuncEntry(IntType(), 1, IntType()));
-    VEnv->push(Symbol("exit"), makeFuncEntry(VoidType(), 1, IntType()));
+    pushFunc(Symbol("print"), VoidType(), makeParamTypes(new StringType()));
+    pushFunc(Symbol("printi"), VoidType(), makeParamTypes(new IntType()));
+    pushFunc(Symbol("flush"), VoidType(), makeParamTypes());
+    pushFunc(Symbol("getchar"), StringType(), makeParamTypes());
+    pushFunc(Symbol("ord"), IntType(), makeParamTypes(new StringType()));
+    pushFunc(Symbol("chr"), StringType(), makeParamTypes(new IntType()));
+    pushFunc(Symbol("size"), IntType(), makeParamTypes(new StringType()));
+    pushFunc(Symbol("substring"), StringType(), makeParamTypes(new StringType(), new IntType(), new IntType()));
+    pushFunc(Symbol("concat"), StringType(), makeParamTypes(new StringType(), new StringType()));
+    pushFunc(Symbol("not"), IntType(), makeParamTypes(new IntType()));
+    pushFunc(Symbol("exit"), VoidType(), makeParamTypes(new IntType()));
+}
+
+vector<Type> *Semant::makeParamTypes(Type *a, Type *b, Type *c)
+{
+    vector<Type> *vec_paramTypes = new vector<Type>;
+    if (a != NULL)
+        vec_paramTypes->push_back(*a);
+    if (b != NULL)
+        vec_paramTypes->push_back(*b);
+    if (c != NULL)
+        vec_paramTypes->push_back(*c);
+    return vec_paramTypes;
 }
 
 void Semant::initTypeEnv()
@@ -36,4 +33,65 @@ void Semant::initTypeEnv()
     TEnv = new TypeEnv();
     TEnv->push(Symbol("int"), new IntType());
     TEnv->push(Symbol("string"), new StringType());
+}
+
+Semant::Semant()
+{
+    loopCount = 0;
+    initVarEnv();
+    initTypeEnv();
+}
+void Semant::beginScope()
+{
+    VEnv->enterScope();
+    TEnv->enterScope();
+}
+void Semant::endScope()
+{
+    VEnv->quitScope();
+    TEnv->quitScope();
+}
+bool Semant::checkTypeRedeclare(Symbol id)
+{
+    Type *typeTy = TEnv->find(id);
+    return (typeTy != NULL);
+}
+bool Semant::checkFuncRedeclare(Symbol id)
+{
+    Entry *funcEt = VEnv->find(id);
+    return ((funcEt != NULL && funcEt->kind == KFunc) || VEnv->findBack(id));
+}
+Type *Semant::findType(Symbol id)
+{
+    return TEnv->findAll(id);
+}
+Entry *Semant::findEntry(Symbol id)
+{
+    return VEnv->findAll(id);
+}
+void Semant::pushType(Symbol id, Type *type)
+{
+    TEnv->push(id, type);
+}
+void Semant::pushFunc(Symbol id, Type retType, vector<Type> *paramTypes)
+{
+    Entry *ent = new Entry(KFunc, retType, paramTypes);
+    VEnv->push(id, ent);
+}
+void Semant::pushVar(Symbol id, Type type)
+{
+    Entry *ent = new Entry(KVar, type);
+    VEnv->push(id, ent);
+}
+void Semant::beginLoop()
+{
+    ++loopCount;
+}
+void Semant::endLoop()
+{
+    --loopCount;
+}
+bool Semant::canBreak()
+{
+    return loopCount != 0;
 }

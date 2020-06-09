@@ -6,7 +6,7 @@
 #include "myparser.hpp"
 using namespace std;
 
-int lineCount;
+int lineCount = 1;
 int indexCount = 0;
 int yycolumn = 1;
 int commentCount = 0;
@@ -14,14 +14,13 @@ int commentCount = 0;
 void yyerror ( const char* s );
 %}
 
-/* option为默认 */
+
 %option noyywrap
-/* 状态声明, 声明一个COMMENT状态来处理注释 */
+
 %x COMMENT
 
 %%
 <*>"/*" { 
-    // 进入COMMENT状态
     BEGIN(COMMENT);
     commentCount++;
     yymore(); 
@@ -31,7 +30,6 @@ void yyerror ( const char* s );
     commentCount--;
     if (commentCount==0)
     {
-        // 回到INITIAL状态
         BEGIN(INITIAL); 
     }
 }
@@ -51,12 +49,10 @@ void yyerror ( const char* s );
     yymore();
 }
 
-[ ]+  {
-    printf("kongge\n");
-}
+[ ]+  ;
 
 <*>[\t] {
-    printf("kongge\n");
+
 }
 
 "array"      return ARRAY;
@@ -107,7 +103,7 @@ void yyerror ( const char* s );
 }
 
 \"[^\"]*\" {
-    // 是否超出长度
+
     if(yyleng > 255)
     {
         yyerror("String too long");
@@ -117,10 +113,10 @@ void yyerror ( const char* s );
     length = yyleng - 1;
     for (int i = 1; i < length; i++)
     {
-        // 转义字符
+
         if (yytext[i] == '\\')
         {
-            // 八进制表示转化
+
             if (i+3 < length && yytext[i+1] >= '0' && yytext[i+1] <= '3' && yytext[i+2] >= '0' && yytext[i+2] <= '7' && yytext[i+3] >= '0' && yytext[i+3] <= '7')
             {
                 yytext[i] = 64*(yytext[i+1]-'0') + 8*(yytext[i+2]-'0') + (yytext[i+3]-'0');
@@ -133,7 +129,7 @@ void yyerror ( const char* s );
                 yytext[length] = 0;
                 length -= 3;
             }
-            // 十六进制表示转化
+
             else if (i+3 < length && yytext[i+1]=='x' && ((yytext[i+2] >= '0' && yytext[i+2] <= '9') || (yytext[i+2] >= 'A' && yytext[i+2] <= 'F') || (yytext[i+2] >= 'a' && yytext[i+2] <= 'f')) && ((yytext[i+3] >= '0' && yytext[i+3] <= '9') || (yytext[i+3] >= 'A' && yytext[i+3] <= 'F') || (yytext[i+3] >= 'a' && yytext[i+3] <= 'f')))
             {
                 yytext[i] = 0;
@@ -170,7 +166,7 @@ void yyerror ( const char* s );
                 yytext[length] = 0;
                 length -= 3;
             }
-            // 其他转义字符
+
             else if (i+1 < length && (yytext[i+1]=='a' || yytext[i+1]=='b' || yytext[i+1]=='f' || yytext[i+1]=='n' || yytext[i+1]=='r' || yytext[i+1]=='t' || yytext[i+1]=='v' || yytext[i+1]=='\\' || yytext[i+1]=='"' ))
             {
                 switch (yytext[i+1])
@@ -206,7 +202,6 @@ void yyerror ( const char* s );
 }
 
 [a-zA-Z][a-zA-Z_0-9]*|"_main" {
-    yyerror("cao");
     if(yyleng>255)
     {
         yyerror("Identifier too long");

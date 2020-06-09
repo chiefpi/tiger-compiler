@@ -16,9 +16,14 @@ public:
         TName
     };
     TypeKind type;
+    bool noAssign;
     Type() {}
     Type(TypeKind type) : type(type){};
-    bool CoerceTo(Type *t);
+    Type(const Type &obj) { type = obj.type; }
+    bool CoerceTo(Type *t)
+    {
+        return false; // TODO: check coerce
+    };
 };
 
 class ArrayType : public Type
@@ -28,15 +33,18 @@ public:
     ArrayType(Type *et) : elementType(et) { type = TArray; }
 };
 
+bool checkTypeEquiv(Type *a, Type *b);
+
 class RecordType : public Type
 {
 public:
-    typedef pair<Symbol, Type *> Field;
+    typedef pair<Symbol *, Type *> Field;
     vector<Field> fieldList;
 
     RecordType(const vector<Field> &fields) : fieldList(fields) { type = TRecord; }
-    Type *getType(Symbol name);
-    int getSize();
+    bool isSame(RecordType *rt);
+    bool checkField(vector<Type *> pts);
+    bool findSymbol(Symbol *sym);
 };
 
 class NameType : public Type

@@ -2,8 +2,8 @@
 *.o
 *.txt
 Makefile.old
-parser.cpp
-parser.hpp
+myparser.cpp
+myparser.hpp
 tokens.cpp
-parser
+myparser
 

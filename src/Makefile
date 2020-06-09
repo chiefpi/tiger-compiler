@@ -11,5 +11,5 @@ myparser.hpp: myparser.cpp
 tokens.cpp: mylexer.l myparser.hpp
 	lex -o $@ $^
 
-myparser: main.cpp myparser.cpp tokens.cpp node.cpp
-	g++ -o $@ `llvm-config --libs core native --cxxflags --ldflags` $^
+myparser: main.cpp myparser.cpp tokens.cpp node.cpp semant.cpp type.cpp
+	g++ -g -o $@ `llvm-config --libs core native --cxxflags --ldflags` $^
