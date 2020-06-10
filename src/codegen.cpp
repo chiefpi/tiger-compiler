@@ -19,7 +19,8 @@ void CodeGenContext::generateCode(NExpr *root) {
     /* Push a new variable/block context */
     pushBlock(bblock);
     root->codeGen(*this); /* emit bytecode for the toplevel block */
-    llvm::ReturnInst::Create(MyContext, bblock);
+    // llvm::ReturnInst::Create(MyContext, currentBlock());
+    builder.CreateRet(lzero);
     popBlock();
 
 #ifdef _DEBUG
@@ -61,7 +62,7 @@ llvm::GenericValue CodeGenContext::runCode() {
 llvm::Type *CodeGenContext::castType(Type *type) {
     llvm::Type *ltype = nullptr;
     switch(type->type) {
-        case Type::TInt: ltype = llvm::Type::getInt64Ty(MyContext); break;
+        case Type::TInt: ltype = lint64; break;
         case Type::TString: ltype = nullptr; break;
         case Type::TNil: ltype = nullptr; break;
     }
@@ -99,6 +100,10 @@ llvm::Value *NDeclList::codeGen(CodeGenContext &context) {
 #ifdef _DEBUG
     std::cout << "Creating declaration list" << std::endl;
 #endif
+    llvm::Value *last = head->codeGen(context);
+    if (next != nullptr)
+        last = next->codeGen(context);
+    return last;
 }
 
 // llvm::Value *NVar::codeGen(CodeGenContext &context) {}
@@ -107,6 +112,10 @@ llvm::Value *NVarList::codeGen(CodeGenContext &context) {
 #ifdef _DEBUG
     std::cout << "Creating variable list" << std::endl;
 #endif
+    llvm::Value *last = head->codeGen(context);
+    if (next != nullptr)
+        last = next->codeGen(context);
+    return last;
 }
 
 // llvm::Value *NType::codeGen(CodeGenContext &context) {}
@@ -125,16 +134,16 @@ llvm::Value *NFieldExprList::codeGen(CodeGenContext &context) {
 
 llvm::Value *NStrExpr::codeGen(CodeGenContext &context) {
 #ifdef _DEBUG
-    std::cout << "Creating string" << std::endl;
+    std::cout << "Creating string: " << value << std::endl;
 #endif
-    return builder.CreateGlobalStringPtr(value, "str");
+    return builder.CreateGlobalStringPtr(value); // segfault?
 }
 
 llvm::Value *NIntExpr::codeGen(CodeGenContext &context) {
 #ifdef _DEBUG
     std::cout << "Creating integer: " << value << std::endl;
 #endif
-    return llvm::ConstantInt::get(llvm::Type::getInt64Ty(MyContext), value, true);
+    return llvm::ConstantInt::get(lint64, value, true);
 }
 
 llvm::Value *NNilExpr::codeGen(CodeGenContext &context) { // TODO: verify null pointer
@@ -151,7 +160,7 @@ llvm::Value *NVarExpr::codeGen(CodeGenContext &context) {
     return builder.CreateLoad(var->codeGen(context), "");
 }
 
-llvm::Value *NOpExpr::codeGen(CodeGenContext &context) {
+llvm::Value *NOpExpr::codeGen(CodeGenContext &context) { // TODO: builder api
 #ifdef _DEBUG
     std::cout << "Creating binary operation: " << op << std::endl;
 #endif
@@ -182,7 +191,7 @@ cmp:
         llvm::IntegerType::get(MyContext, 64), "", context.currentBlock());
 }
 
-llvm::Value *NAssignExpr::codeGen(CodeGenContext &context) {
+llvm::Value *NAssignExpr::codeGen(CodeGenContext &context) { // TODO: builder api
 #ifdef _DEBUG
     std::cout << "Creating assignment" << std::endl;
 #endif
@@ -202,9 +211,9 @@ llvm::Value *NRecordExpr::codeGen(CodeGenContext &context) { // TODO
     llvm::Value *var = builder.CreateCall(
         context.createIntrinsicFunction( // TODO
             "",
-            {llvm::Type::getInt64Ty(MyContext)},
+            {lint64},
             llvm::Type::getInt8PtrTy(MyContext)),
-        llvm::ConstantInt::get(llvm::Type::getInt64Ty(MyContext), llvm::APInt(64, size)),
+        llvm::ConstantInt::get(lint64, llvm::APInt(64, size)),
         "");
     var = builder.CreateBitCast(var, context.tenv.findAll(*type), "");
     size_t idx = 0;
@@ -213,7 +222,7 @@ llvm::Value *NRecordExpr::codeGen(CodeGenContext &context) { // TODO
         auto eptr = builder.CreateGEP(
             context.tenv.findAll(*(it->id)), // TODO
             var,
-            llvm::ConstantInt::get(llvm::Type::getInt64Ty(MyContext), llvm::APInt(64, idx)),
+            llvm::ConstantInt::get(lint64, llvm::APInt(64, idx)),
             "");
         // context.checkStore(exp, eptr);
         builder.CreateStore(exp, eptr);
@@ -222,27 +231,34 @@ llvm::Value *NRecordExpr::codeGen(CodeGenContext &context) { // TODO
     return var;
 }
 
-llvm::Value *NArrayExpr::codeGen(CodeGenContext &context) {
+llvm::Value *NArrayExpr::codeGen(CodeGenContext &context) { // TODO: init
 #ifdef _DEBUG
     std::cout << "Creating array" << std::endl;
 #endif
 //     llvm::ArrayType* arrayTy = llvm::ArrayType::get(llvm::IntegerType::get(MyContext, 64), size->codeGen(context)); // TODO: int to type
 //     return new llvm::AllocaInst(arrayTy, "", context.currentBlock());
+    auto function = builder.GetInsertBlock()->getParent();
+    // if (!type_->isPointerTy()) return context.logErrorV("Array type required");
+    auto init = initValue->codeGen(context);
+    auto esize = llvm::ConstantInt::get(lint64, llvm::APInt(64, context.module->getDataLayout().getTypeAllocSize(lint64)));
+    llvm::Value *array = builder.CreateCall(
+        context.createIntrinsicFunction("", {lint64, lint64}, llvm::Type::getInt8PtrTy(MyContext)),
+        std::vector<llvm::Value *>{size->codeGen(context), esize},
+        "");
+    return builder.CreateBitCast(array, lint64, "");
 }
 
 llvm::Value *NCallExpr::codeGen(CodeGenContext &context) {
 #ifdef _DEBUG
-    std::cout << "Creating function call" << std::endl;
+    std::cout << "Creating function call: " << func->id << std::endl;
 #endif
-    llvm::Function *function = context.module->getFunction(func->id);
-    if (function == nullptr)
-        std::cerr << "No such function" << std::endl;
+    llvm::Function *function = context.module->getFunction(func->id); // not symbol table
 
-    std::vector<llvm::Value *> args;
-    for (NExprList *it = this->args; it != nullptr; it = it->next)
-        args.push_back((*it).codeGen(context));
+    std::vector<llvm::Value *> fargs;
+    for (NExprList *it = args; it != nullptr; it = it->next)
+        fargs.push_back((*it).codeGen(context));
 
-    return llvm::CallInst::Create(function, llvm::makeArrayRef(args), "", context.currentBlock());;
+    return llvm::CallInst::Create(function, llvm::makeArrayRef(fargs), "", context.currentBlock());
 }
 
 llvm::Value *NSeqExpr::codeGen(CodeGenContext &context) {
@@ -259,46 +275,44 @@ llvm::Value *NIfExpr::codeGen(CodeGenContext &context) { // TODO: verify
 #ifdef _DEBUG
     std::cout << "Creating if" << std::endl;
 #endif
-    auto cond = builder.CreateICmpNE(test->codeGen(context), llvm::ConstantInt::get(llvm::Type::getInt64Ty(MyContext), llvm::APInt(64, 0)), "");
     auto function = builder.GetInsertBlock()->getParent();
 
-    auto thenBlock = llvm::BasicBlock::Create(MyContext, "", function);
-    auto elseBlock = llvm::BasicBlock::Create(MyContext, "");
-    auto mergeBlock = llvm::BasicBlock::Create(MyContext, "");
+    auto thenBlock = llvm::BasicBlock::Create(MyContext, "then", function);
+    auto elseBlock = llvm::BasicBlock::Create(MyContext, "else");
+    auto mergeBlock = llvm::BasicBlock::Create(MyContext, "merge");
 
+    auto cond = builder.CreateICmpNE(test->codeGen(context), lzero, "");
     builder.CreateCondBr(cond, thenBlock, elseBlock);
+
     builder.SetInsertPoint(thenBlock);
-
-    auto then = thenClause->codeGen(context);
+    context.pushBlock(thenBlock);
+    auto thenValue = thenClause->codeGen(context);
+    context.popBlock();
     builder.CreateBr(mergeBlock);
+    // function->getBasicBlockList().push_back(elseBlock);
 
-    thenBlock = builder.GetInsertBlock();
-    function->getBasicBlockList().push_back(elseBlock);
     builder.SetInsertPoint(elseBlock);
-
     llvm::Value *elseValue;
     if (elseClause) {
+        context.pushBlock(elseBlock);
         elseValue = elseClause->codeGen(context);
-        if (!elseValue)
-            return nullptr;
+        std::cout << "here" << std::endl;
+        context.popBlock();
     }
-
     builder.CreateBr(mergeBlock);
-    elseBlock = builder.GetInsertBlock();
+    // function->getBasicBlockList().push_back(mergeBlock);
 
-    function->getBasicBlockList().push_back(mergeBlock);
     builder.SetInsertPoint(mergeBlock);
-
-    if (elseClause && !then->getType()->isVoidTy() && !elseValue->getType()->isVoidTy()) {
-        auto pn = builder.CreatePHI(then->getType(), 2, "");
-        // then = context.convertNil(then, elseValue);
-        // elseValue = context.convertNil(elseValue, then);
-        pn->addIncoming(then, thenBlock);
+    if (elseClause && !thenValue->getType()->isVoidTy() && !elseValue->getType()->isVoidTy()) {
+        auto pn = builder.CreatePHI(thenValue->getType(), 2, "");
+        // thenValue = context.convertNil(thenValue, elseValue);
+        // elseValue = context.convertNil(elseValue, thenValue);
+        pn->addIncoming(thenValue, thenBlock);
         pn->addIncoming(elseValue, elseBlock);
         return pn;
     }
 
-    return llvm::Constant::getNullValue(llvm::Type::getInt64Ty(MyContext));
+    return lnull;
 }
 
 llvm::Value *NWhileExpr::codeGen(CodeGenContext &context) {
@@ -306,27 +320,26 @@ llvm::Value *NWhileExpr::codeGen(CodeGenContext &context) {
     std::cout << "Creating while loop" << std::endl;
 #endif
     auto function = builder.GetInsertBlock()->getParent();
-    auto testBlock = llvm::BasicBlock::Create(MyContext, "", function);
-    auto loopBlock = llvm::BasicBlock::Create(MyContext, "", function);
-    auto nextBlock = llvm::BasicBlock::Create(MyContext, "", function);
-    auto afterBlock = llvm::BasicBlock::Create(MyContext, "", function);
+    auto testBlock = llvm::BasicBlock::Create(MyContext, "test", function);
+    auto loopBlock = llvm::BasicBlock::Create(MyContext, "loop", function);
+    auto nextBlock = llvm::BasicBlock::Create(MyContext, "next", function);
+    auto afterBlock = llvm::BasicBlock::Create(MyContext, "after", function);
     context.loopstk.push({nextBlock, afterBlock});
 
     builder.CreateBr(testBlock);
+
     builder.SetInsertPoint(testBlock);
+    context.pushBlock(testBlock);
+    auto cond = builder.CreateICmpEQ(test->codeGen(context), lzero, "");
+    context.popBlock();
+    builder.CreateCondBr(cond, afterBlock, loopBlock);
 
-    builder.CreateCondBr( // to after or loop
-        builder.CreateICmpEQ(
-            test->codeGen(context),
-            llvm::ConstantInt::get(llvm::Type::getInt64Ty(MyContext), llvm::APInt(64, 0)),
-            ""),
-        afterBlock,
-        loopBlock);
     builder.SetInsertPoint(loopBlock);
-
+    context.pushBlock(loopBlock);
     body->codeGen(context);
-
+    context.popBlock();
     builder.CreateBr(nextBlock);
+
     builder.SetInsertPoint(nextBlock);
     builder.CreateBr(testBlock);
 
@@ -334,7 +347,7 @@ llvm::Value *NWhileExpr::codeGen(CodeGenContext &context) {
 
     context.loopstk.pop();
 
-    return llvm::Constant::getNullValue(llvm::Type::getInt64Ty(MyContext));
+    return lnull;
 }
 
 llvm::Value *NForExpr::codeGen(CodeGenContext &context) {
@@ -343,55 +356,49 @@ llvm::Value *NForExpr::codeGen(CodeGenContext &context) {
 #endif
     llvm::Function *function = builder.GetInsertBlock()->getParent();
 
-    llvm::BasicBlock *testBlock = llvm::BasicBlock::Create(MyContext, "", function);
-    llvm::BasicBlock *loopBlock = llvm::BasicBlock::Create(MyContext, "", function);
-    llvm::BasicBlock *nextBlock = llvm::BasicBlock::Create(MyContext, "", function);
-    llvm::BasicBlock *afterBlock = llvm::BasicBlock::Create(MyContext, "", function);
+    llvm::BasicBlock *testBlock = llvm::BasicBlock::Create(MyContext, "test", function);
+    llvm::BasicBlock *loopBlock = llvm::BasicBlock::Create(MyContext, "loop", function);
+    llvm::BasicBlock *nextBlock = llvm::BasicBlock::Create(MyContext, "next", function);
+    llvm::BasicBlock *afterBlock = llvm::BasicBlock::Create(MyContext, "after", function);
     context.loopstk.push({nextBlock, afterBlock});
 
-    builder.CreateBr(testBlock);
-    builder.SetInsertPoint(testBlock);
-
-    llvm::Value *vardec = id->codeGen(context);
-    auto xx = builder.CreateLoad(vardec, "");
-    std::cout << "here" << std::endl;
-    auto cond = builder.CreateICmpSLE(
-        xx, high->codeGen(context), "");
-    std::cout << "here" << std::endl;
-
-    builder.CreateCondBr(cond, loopBlock, afterBlock);
-    builder.SetInsertPoint(loopBlock);
-    std::cout << "here" << std::endl;
-
+    llvm::Value *index = id->codeGen(context);
     context.venv.enterScope();
-    context.venv.push(*(id->id), vardec);
-
-    if (!body->codeGen(context))
-        return nullptr;
-
-    builder.CreateBr(nextBlock);
-    builder.SetInsertPoint(nextBlock);
-
-    auto nextVar = builder.CreateAdd(
-        builder.CreateLoad(vardec, ""),
-        llvm::ConstantInt::get(MyContext, llvm::APInt(64, 1)), "");
-    builder.CreateStore(nextVar, vardec);
+    context.venv.push(*(id->id), index);
 
     builder.CreateBr(testBlock);
+
+    builder.SetInsertPoint(testBlock);
+    context.pushBlock(testBlock);
+    auto cond = builder.CreateICmpSLE(builder.CreateLoad(index, ""), high->codeGen(context), "");
+    context.popBlock();
+    builder.CreateCondBr(cond, loopBlock, afterBlock);
+
+    builder.SetInsertPoint(loopBlock);
+    context.pushBlock(loopBlock);
+    body->codeGen(context);
+    context.popBlock();
+    builder.CreateBr(nextBlock);
+
+    builder.SetInsertPoint(nextBlock);
+    auto nextVar = builder.CreateAdd(builder.CreateLoad(index, ""), lone);
+    builder.CreateStore(nextVar, index);
+    builder.CreateBr(testBlock);
+
     builder.SetInsertPoint(afterBlock);
 
     context.venv.quitScope();
     context.loopstk.pop();
 
-    return llvm::Constant::getNullValue(llvm::Type::getInt64Ty(MyContext));
+    return lnull;
 }
 
 llvm::Value *NBreakExpr::codeGen(CodeGenContext &context) {
 #ifdef _DEBUG
     std::cout << "Creating break" << std::endl;
 #endif
-    builder.CreateBr(std::get<1>(context.loopstk.top()));
-    return llvm::Constant::getNullValue(llvm::Type::getInt64Ty(MyContext)); // nothing
+    builder.CreateBr(std::get<1>(context.loopstk.top())); // to afterBlock
+    return lnull;
 }
 
 llvm::Value *NLetExpr::codeGen(CodeGenContext &context) {
@@ -416,12 +423,9 @@ llvm::Value *NFuncDecl::codeGen(CodeGenContext &context) {
     for (NFieldTypeList *it = params; it != nullptr; it = it->next)
         argTypes.push_back(context.tenv.findAll(*(it->type)));
 
-    llvm::FunctionType *ftype = llvm::FunctionType::get((llvm::Type *)(retType->codeGen(context)), llvm::makeArrayRef(context.tenv.findAll(*(params->type))), false);
-    std::cout << "here" << std::endl;
+    llvm::FunctionType *ftype = llvm::FunctionType::get(lvoid, llvm::makeArrayRef(argTypes), false); // TODO: general ret type
     llvm::Function *function = llvm::Function::Create(ftype, llvm::GlobalValue::InternalLinkage, "", context.module);
-    std::cout << "here" << std::endl;
     llvm::BasicBlock *bblock = llvm::BasicBlock::Create(MyContext, "entry", function, 0);
-    std::cout << "here" << std::endl;
 
     context.pushBlock(bblock);
     context.tenv.enterScope();
@@ -429,23 +433,20 @@ llvm::Value *NFuncDecl::codeGen(CodeGenContext &context) {
 
     llvm::Function::arg_iterator argsValues = function->arg_begin();
     llvm::Value* argumentValue;
-    std::cout << "here" << std::endl;
 
     for (NFieldTypeList *it = params; it != nullptr; it = it->next) {
-        (*it).codeGen(context);
-
+        it->codeGen(context);
         argumentValue = &*argsValues++;
-        // argumentValue->setName((*it)->id.name.c_str());
+        argumentValue->setName(it->id->id);
         llvm::StoreInst *inst = new llvm::StoreInst(argumentValue, context.venv.findAll(*(it->id)), false, bblock);
     }
-    std::cout << "here" << std::endl;
     
     body->codeGen(context);
     llvm::ReturnInst::Create(MyContext, context.getCurrentReturnValue(), bblock);
 
-    context.popBlock();
     context.venv.quitScope();
     context.tenv.quitScope();
+    context.popBlock();
 
     return function;
 }
@@ -461,23 +462,20 @@ llvm::Value *NVarDecl::codeGen(CodeGenContext &context) {
 #ifdef _DEBUG
     std::cout << "Creating variable declaration: " << id->id << std::endl;
 #endif
-    llvm::Type *vtype = llvm::Type::getVoidTy(MyContext);
-    if (type)
-        vtype = (llvm::Type *)(type->codeGen(context));
-    llvm::AllocaInst *alloc = new llvm::AllocaInst(llvm::Type::getInt64Ty(MyContext), "", context.currentBlock());
+    // llvm::Type *vtype = llvm::Type::getVoidTy(MyContext);
+    // if (type)
+    //     vtype = (llvm::Type *)(type->codeGen(context));
+    llvm::AllocaInst *alloc = new llvm::AllocaInst(lint64, "", context.currentBlock()); // TODO: general type
     // llvm::AllocaInst *alloc = new llvm::AllocaInst(vtype, "", context.currentBlock());
-    std::cout << "here" << std::endl;
-    // if (initValue != nullptr) {
-    //     NAssignExpr assn(line, index, id, initValue);
-    //     assn.codeGen(context);
-    // }
+    if (initValue != nullptr)
+        auto inst = new llvm::StoreInst(initValue->codeGen(context), alloc, false, context.currentBlock());
     context.venv.push(*id, alloc);
     return alloc;
 }
 
 llvm::Value *NArrayType::codeGen(CodeGenContext &context) {
 #ifdef _DEBUG
-    std::cout << "Creating array type " << std::endl;
+    std::cout << "Creating array type" << std::endl;
 #endif
 }
 
@@ -503,25 +501,25 @@ llvm::Value *NSimpleVar::codeGen(CodeGenContext &context) {
 }
 
 llvm::Value *NFieldVar::codeGen(CodeGenContext &context) {
-// #ifdef _DEBUG
-//     std::cout << "Creating field variable " << var.id << " " << id << std::endl;
-// #endif
+#ifdef _DEBUG
+    std::cout << "Creating field variable: " << id->id << std::endl;
+#endif
 //     return builder.CreateGEP(
 //         context.castType(var), // TODO
 //         builder.CreateLoad(var->codeGen(context), ""),
-//         llvm::ConstantInt::get(llvm::Type::getInt64Ty(MyContext), llvm::APInt(64, id)),
+//         llvm::ConstantInt::get(lint64, llvm::APInt(64, id)), // TODO: id
 //         "");
 }
 
 llvm::Value *NSubscriptVar::codeGen(CodeGenContext &context) {
-// #ifdef _DEBUG
-//     std::cout << "Creating subscription variable" << std::endl;
-// #endif
-//     return builder.CreateGEP(
-//         context.castType(var), // TODO
-//         builder.CreateLoad(var->codeGen(context), ""),
-//         sub->codeGen(context),
-//         "");
+#ifdef _DEBUG
+    std::cout << "Creating subscription variable" << std::endl;
+#endif
+    return builder.CreateGEP(
+        lint64, // TODO: general type
+        builder.CreateLoad(var->codeGen(context), ""),
+        sub->codeGen(context),
+        "");
 }
 
 // llvm::Value *Symbol::codeGen(CodeGenContext& context) {
