@@ -168,7 +168,7 @@ vardecl		:  VAR id ASSIGN expr { $$ = new NVarDecl(lineCount, indexCount, $2, $4
 			;
 
 funclist	: funcdecl { $$ = $1; }
-			| funcdecl funclist { $$ = new NFuncDecl(lineCount, indexCount, NULL, NULL, NULL, NULL, $2); }
+			| funcdecl funclist { $$ = new NFuncDecl(lineCount, indexCount, $1->id, $1->params, $1->body, $1->retType, $2); }
 			;
 
 funcdecl	: FUNCTION id LPAREN RPAREN EQ expr { $$ = new NFuncDecl(lineCount, indexCount, $2, NULL, $6, NULL, NULL); }
