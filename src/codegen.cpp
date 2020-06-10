@@ -82,25 +82,33 @@ llvm::Function *CodeGenContext::createIntrinsicFunction(
 // llvm::Value *NExpr::codeGen(CodeGenContext &context) {}
 
 llvm::Value *NExprList::codeGen(CodeGenContext &context) {
-
+#ifdef _DEBUG
+    std::cout << "Creating expression list" << std::endl;
+#endif
 }
 
 // llvm::Value *NDecl::codeGen(CodeGenContext &context) {}
 
 llvm::Value *NDeclList::codeGen(CodeGenContext &context) {
-
+#ifdef _DEBUG
+    std::cout << "Creating declaration list" << std::endl;
+#endif
 }
 
 // llvm::Value *NVar::codeGen(CodeGenContext &context) {}
 
 llvm::Value *NVarList::codeGen(CodeGenContext &context) {
-
+#ifdef _DEBUG
+    std::cout << "Creating variable list" << std::endl;
+#endif
 }
 
 // llvm::Value *NType::codeGen(CodeGenContext &context) {}
 
 llvm::Value *NFieldTypeList::codeGen(CodeGenContext &context) {
-
+#ifdef _DEBUG
+    std::cout << "Creating field type list" << std::endl;
+#endif
 }
 
 llvm::Value *NFieldExprList::codeGen(CodeGenContext &context) {
@@ -131,7 +139,10 @@ llvm::Value *NNilExpr::codeGen(CodeGenContext &context) { // TODO: verify null p
 }
 
 llvm::Value *NVarExpr::codeGen(CodeGenContext &context) {
-
+#ifdef _DEBUG
+    std::cout << "Creating variable expression" << std::endl;
+#endif
+    return builder.CreateLoad(var->codeGen(context), "");
 }
 
 llvm::Value *NOpExpr::codeGen(CodeGenContext &context) {
@@ -380,7 +391,7 @@ llvm::Value *NLetExpr::codeGen(CodeGenContext &context) {
     context.tenv.enterScope();
     context.venv.enterScope();
     for (auto &dec = decls; dec != nullptr; dec = dec->next)
-        dec->codeGen(context);
+        dec->head->codeGen(context);
     auto result = body->codeGen(context);
     context.venv.quitScope();
     context.tenv.quitScope();
@@ -388,60 +399,65 @@ llvm::Value *NLetExpr::codeGen(CodeGenContext &context) {
 }
 
 llvm::Value *NFuncDecl::codeGen(CodeGenContext &context) {
-// #ifdef _DEBUG
-//     std::cout << "Creating function " << id.name << std::endl;
-// #endif
-//     std::vector<llvm::Type *> argTypes;
-//     for (NFieldTypeList *it = params; it != nullptr; it = it->next)
-//         argTypes.push_back(context.tenv.findAll(*(it->type)));
+#ifdef _DEBUG
+    std::cout << "Creating function: " << id->id << std::endl;
+#endif
+    std::vector<llvm::Type *> argTypes;
+    for (NFieldTypeList *it = params; it != nullptr; it = it->next)
+        argTypes.push_back(context.tenv.findAll(*(it->type)));
 
-//     llvm::FunctionType *ftype = llvm::FunctionType::get(context.tenv.findAll(retType), llvm::makeArrayRef(context.tenv.findAll(*(params->type))), false);
-//     llvm::Function *function = llvm::Function::Create(ftype, llvm::GlobalValue::InternalLinkage, "", context.module);
-//     llvm::BasicBlock *bblock = llvm::BasicBlock::Create(MyContext, "entry", function, 0);
+    llvm::FunctionType *ftype = llvm::FunctionType::get((llvm::Type *)(retType->codeGen(context)), llvm::makeArrayRef(context.tenv.findAll(*(params->type))), false);
+    std::cout << "here" << std::endl;
+    llvm::Function *function = llvm::Function::Create(ftype, llvm::GlobalValue::InternalLinkage, "", context.module);
+    std::cout << "here" << std::endl;
+    llvm::BasicBlock *bblock = llvm::BasicBlock::Create(MyContext, "entry", function, 0);
+    std::cout << "here" << std::endl;
 
-//     context.pushBlock(bblock);
-//     context.tenv.enterScope();
-//     context.venv.enterScope();
+    context.pushBlock(bblock);
+    context.tenv.enterScope();
+    context.venv.enterScope();
 
-//     llvm::Function::arg_iterator argsValues = function->arg_begin();
-//     llvm::Value* argumentValue;
+    llvm::Function::arg_iterator argsValues = function->arg_begin();
+    llvm::Value* argumentValue;
+    std::cout << "here" << std::endl;
 
-//     for (NFieldTypeList *it = params; it != nullptr; it = it->next) {
-//         (*it).codeGen(context);
+    for (NFieldTypeList *it = params; it != nullptr; it = it->next) {
+        (*it).codeGen(context);
 
-//         argumentValue = &*argsValues++;
-//         // argumentValue->setName((*it)->id.name.c_str());
-//         llvm::StoreInst *inst = new llvm::StoreInst(argumentValue, context.venv.findAll(*(it->id)), false, bblock);
-//     }
+        argumentValue = &*argsValues++;
+        // argumentValue->setName((*it)->id.name.c_str());
+        llvm::StoreInst *inst = new llvm::StoreInst(argumentValue, context.venv.findAll(*(it->id)), false, bblock);
+    }
+    std::cout << "here" << std::endl;
     
-//     body->codeGen(context);
-//     llvm::ReturnInst::Create(MyContext, context.getCurrentReturnValue(), bblock);
+    body->codeGen(context);
+    llvm::ReturnInst::Create(MyContext, context.getCurrentReturnValue(), bblock);
 
-//     context.popBlock();
-//     context.venv.quitScope();
-//     context.tenv.quitScope();
+    context.popBlock();
+    context.venv.quitScope();
+    context.tenv.quitScope();
 
-//     return function;
+    return function;
 }
 
 llvm::Value *NTypeDecl::codeGen(CodeGenContext &context) {
 #ifdef _DEBUG
-    std::cout << "Creating type declaration" << std::endl;
+    std::cout << "Creating type declaration: " << id->id << std::endl;
 #endif
 
 }
 
 llvm::Value *NVarDecl::codeGen(CodeGenContext &context) {
-// #ifdef _DEBUG
-//     std::cout << "Creating variable declaration " << type.name << " " << id.name << std::endl;
-// #endif
-//     llvm::AllocaInst *alloc = new llvm::AllocaInst(type->codeGen(context), "", context.currentBlock()); // TODO
-//     context.venv.push(*id, alloc); // TODO: modify env
-//     if (initValue != nullptr) {
-//         NAssignExpr assn(line, index, id, initValue);
-//         assn.codeGen(context);
-//     }
-//     return alloc;
+#ifdef _DEBUG
+    std::cout << "Creating variable declaration: " << id->id << std::endl;
+#endif
+    // llvm::AllocaInst *alloc = new llvm::AllocaInst((llvm::Type *)(type->codeGen(context)), "", context.currentBlock()); // TODO
+    // context.venv.push(*id, alloc); // TODO: modify env
+    // if (initValue != nullptr) {
+    //     NAssignExpr assn(line, index, id, initValue);
+    //     assn.codeGen(context);
+    // }
+    // return alloc;
 }
 
 llvm::Value *NArrayType::codeGen(CodeGenContext &context) {
@@ -458,7 +474,7 @@ llvm::Value *NRecordType::codeGen(CodeGenContext &context) {
 
 llvm::Value *NNameType::codeGen(CodeGenContext &context) { // TODO: value to type
 #ifdef _DEBUG
-    std::cout << "Creating name type " << std::endl;
+    std::cout << "Creating name type: " << id->id << std::endl;
 #endif
 }
 
