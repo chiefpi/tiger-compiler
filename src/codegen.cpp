@@ -14,6 +14,8 @@ void CodeGenContext::generateCode(NExpr *root) {
     mainFunction = llvm::Function::Create(ftype, llvm::GlobalValue::InternalLinkage, "main", module);
     llvm::BasicBlock *bblock = llvm::BasicBlock::Create(MyContext, "entry", mainFunction, 0);
 
+    builder.SetInsertPoint(bblock);
+
     /* Push a new variable/block context */
     pushBlock(bblock);
     root->codeGen(*this); /* emit bytecode for the toplevel block */
@@ -85,6 +87,10 @@ llvm::Value *NExprList::codeGen(CodeGenContext &context) {
 #ifdef _DEBUG
     std::cout << "Creating expression list" << std::endl;
 #endif
+    llvm::Value *last = head->codeGen(context);
+    if (next != nullptr)
+        last = next->codeGen(context);
+    return last;
 }
 
 // llvm::Value *NDecl::codeGen(CodeGenContext &context) {}
@@ -126,7 +132,7 @@ llvm::Value *NStrExpr::codeGen(CodeGenContext &context) {
 
 llvm::Value *NIntExpr::codeGen(CodeGenContext &context) {
 #ifdef _DEBUG
-    std::cout << "Creating integer" << std::endl;
+    std::cout << "Creating integer: " << value << std::endl;
 #endif
     return llvm::ConstantInt::get(llvm::Type::getInt64Ty(MyContext), value, true);
 }
@@ -147,7 +153,7 @@ llvm::Value *NVarExpr::codeGen(CodeGenContext &context) {
 
 llvm::Value *NOpExpr::codeGen(CodeGenContext &context) {
 #ifdef _DEBUG
-    std::cout << "Creating binary operation" << std::endl;
+    std::cout << "Creating binary operation: " << op << std::endl;
 #endif
     llvm::Instruction::BinaryOps minst;
     llvm::ICmpInst::Predicate cinst;
@@ -217,9 +223,9 @@ llvm::Value *NRecordExpr::codeGen(CodeGenContext &context) { // TODO
 }
 
 llvm::Value *NArrayExpr::codeGen(CodeGenContext &context) {
-// #ifdef _DEBUG
-//     std::cout << "Creating array" << std::endl;
-// #endif
+#ifdef _DEBUG
+    std::cout << "Creating array" << std::endl;
+#endif
 //     llvm::ArrayType* arrayTy = llvm::ArrayType::get(llvm::IntegerType::get(MyContext, 64), size->codeGen(context)); // TODO: int to type
 //     return new llvm::AllocaInst(arrayTy, "", context.currentBlock());
 }
@@ -333,7 +339,7 @@ llvm::Value *NWhileExpr::codeGen(CodeGenContext &context) {
 
 llvm::Value *NForExpr::codeGen(CodeGenContext &context) {
 #ifdef _DEBUG
-    std::cout << "Creating for loop" << std::endl;
+    std::cout << "Creating for expression" << std::endl;
 #endif
     llvm::Function *function = builder.GetInsertBlock()->getParent();
 
@@ -347,11 +353,15 @@ llvm::Value *NForExpr::codeGen(CodeGenContext &context) {
     builder.SetInsertPoint(testBlock);
 
     llvm::Value *vardec = id->codeGen(context);
+    auto xx = builder.CreateLoad(vardec, "");
+    std::cout << "here" << std::endl;
     auto cond = builder.CreateICmpSLE(
-        builder.CreateLoad(vardec, ""), high->codeGen(context), "");
+        xx, high->codeGen(context), "");
+    std::cout << "here" << std::endl;
 
     builder.CreateCondBr(cond, loopBlock, afterBlock);
     builder.SetInsertPoint(loopBlock);
+    std::cout << "here" << std::endl;
 
     context.venv.enterScope();
     context.venv.push(*(id->id), vardec);
@@ -451,13 +461,18 @@ llvm::Value *NVarDecl::codeGen(CodeGenContext &context) {
 #ifdef _DEBUG
     std::cout << "Creating variable declaration: " << id->id << std::endl;
 #endif
-    // llvm::AllocaInst *alloc = new llvm::AllocaInst((llvm::Type *)(type->codeGen(context)), "", context.currentBlock()); // TODO
-    // context.venv.push(*id, alloc); // TODO: modify env
+    llvm::Type *vtype = llvm::Type::getVoidTy(MyContext);
+    if (type)
+        vtype = (llvm::Type *)(type->codeGen(context));
+    llvm::AllocaInst *alloc = new llvm::AllocaInst(llvm::Type::getInt64Ty(MyContext), "", context.currentBlock());
+    // llvm::AllocaInst *alloc = new llvm::AllocaInst(vtype, "", context.currentBlock());
+    std::cout << "here" << std::endl;
     // if (initValue != nullptr) {
     //     NAssignExpr assn(line, index, id, initValue);
     //     assn.codeGen(context);
     // }
-    // return alloc;
+    context.venv.push(*id, alloc);
+    return alloc;
 }
 
 llvm::Value *NArrayType::codeGen(CodeGenContext &context) {
@@ -476,6 +491,7 @@ llvm::Value *NNameType::codeGen(CodeGenContext &context) { // TODO: value to typ
 #ifdef _DEBUG
     std::cout << "Creating name type: " << id->id << std::endl;
 #endif
+    return (llvm::Value *)(context.tenv.findAll(*id));
 }
 
 llvm::Value *NSimpleVar::codeGen(CodeGenContext &context) {

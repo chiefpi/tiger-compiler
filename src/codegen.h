@@ -53,8 +53,7 @@ public:
 
     CodeGenContext() {
         module = new llvm::Module("main", MyContext);
-        // venv = initLVarEnv();
-        // tenv = initLTypeEnv();
+        tenv.push(Symbol("int"), llvm::Type::getInt64Ty(MyContext));
     }
 
     void generateCode(NExpr *root);
