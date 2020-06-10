@@ -16,16 +16,16 @@ public:
     }
     void print(int depth) const
     {
-        cout << "node" << printCount++ << "["
-             << "label = \"id\"];" << endl;
-        cout << "node" << printCount++ << "["
-             << "label = \""<< id <<"\"];" << endl;
-        // for (int i = 0; i < depth; i++)
-        //     cout << "	";
-        // cout << "<id>" << endl;
-        // for (int i = 0; i < depth + 1; i++)
-        //     cout << "	";
-        // cout << id << endl;
+        // cout << "node" << printCount++ << "["
+        //      << "label = \"id\"];" << endl;
+        // cout << "node" << printCount++ << "["
+        //      << "label = \""<< id <<"\"];" << endl;
+        for (int i = 0; i < depth; i++)
+            cout << " ";
+        cout << "<id>" << endl;
+        for (int i = 0; i < depth + 1; i++)
+            cout << " ";
+        cout << id << endl;
     }
     bool operator==(const Symbol &other) const
     {

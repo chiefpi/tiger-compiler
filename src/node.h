@@ -65,7 +65,7 @@ public:
 	void printIndent(int d) const
 	{
 		for (int i = 0; i < d; i++)
-			cout << "	";
+			cout << " ";
 	}
 	bool assertpred(bool pred, string msg)
 	{
