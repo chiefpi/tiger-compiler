@@ -53,12 +53,12 @@ void Semant::endScope()
 }
 bool Semant::checkTypeRedeclare(Symbol id)
 {
-    Type *typeTy = TEnv->find(id);
+    Type *typeTy = TEnv->findFront(id);
     return (typeTy != NULL);
 }
 bool Semant::checkFuncRedeclare(Symbol id)
 {
-    Entry *funcEt = VEnv->find(id);
+    Entry *funcEt = VEnv->findFront(id);
     return ((funcEt != NULL && funcEt->kind == KFunc) || VEnv->findBack(id));
 }
 Type *Semant::findType(Symbol id)
