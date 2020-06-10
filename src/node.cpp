@@ -300,9 +300,10 @@ Type NArrayExpr::traverse(Semant *analyzer)
     Type *ty = analyzer->findType(*type);
     assertpred(ty != NULL && ty->type == Type::TArray, "Invalid Array Expression: Undefined Array Type");
     assertpred(size->traverse(analyzer).type == Type::TInt, "Invalid Array Expression: Non-Integer Index");
+    ArrayType *arrTy = (ArrayType *)ty;
     Type *initValueTy = new Type(initValue->traverse(analyzer));
-    assertpred(checkTypeEquiv(ty, initValueTy), "Invalid Array Expression: Unmatched InitValue Type");
-    return ArrayType(ty);
+    assertpred(checkTypeEquiv(arrTy->elementType, initValueTy), "Invalid Array Expression: Unmatched InitValue Type");
+    return ArrayType(initValueTy);
 }
 
 void NCallExpr::print(int depth) const
@@ -532,8 +533,7 @@ Type NTypeDecl::traverse(Semant *analyzer)
 {
     assertpred(!analyzer->checkTypeRedeclare(*id),
                "Invalid Type Declaration: Type Redeclaration");
-    Type temp = type->traverse(analyzer);
-    Type *typeTy = new Type(temp);
+    Type *typeTy = new Type(type->traverse(analyzer));
     // TODO: check circular definition
     analyzer->pushType(*id, typeTy);
     if (next != NULL)
@@ -594,7 +594,7 @@ Type NArrayType::traverse(Semant *analyzer)
 {
     Type *idTy = analyzer->findType(*id);
     assertpred(idTy != NULL, "Undefined Type");
-    return *idTy;
+    return ArrayType(idTy);
 }
 
 void NRecordType::print(int depth) const
@@ -634,7 +634,7 @@ Type NNameType::traverse(Semant *analyzer)
 {
     Type *idTy = analyzer->findType(*id);
     assertpred(idTy != NULL, "Undefined Type");
-    return *idTy;
+    return NameType(*id, idTy);
 }
 
 void NSimpleVar::print(int depth) const

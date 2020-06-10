@@ -15,7 +15,7 @@ public:
     SymbolTable();
     ~SymbolTable();
     T *findAll(Symbol id);
-    T *find(Symbol id);
+    T *findFront(Symbol id);
     T *findBack(Symbol id);
     void push(Symbol id, T *value);
     void pop(Symbol id);
@@ -43,15 +43,15 @@ template <typename T>
 T *SymbolTable<T>::findAll(Symbol id)
 {
     for (auto s : stack)
-        if (s[id])
+        if (s.find(id) != s.end())
             return s[id];
     return NULL;
 }
 
 template <typename T>
-T *SymbolTable<T>::find(Symbol id)
+T *SymbolTable<T>::findFront(Symbol id)
 {
-    if (stack.front()[id])
+    if (stack.front().find(id) != stack.front().end())
         return stack.front()[id];
     return NULL;
 }
@@ -59,7 +59,7 @@ T *SymbolTable<T>::find(Symbol id)
 template <typename T>
 T *SymbolTable<T>::findBack(Symbol id)
 {
-    if (stack.back()[id])
+    if (stack.back().find(id) != stack.back().end())
         return stack.back()[id];
     return NULL;
 }
@@ -67,7 +67,11 @@ T *SymbolTable<T>::findBack(Symbol id)
 template <typename T>
 void SymbolTable<T>::push(Symbol id, T *value)
 {
-    stack.front().insert(make_pair(id, value));
+    auto it = stack.front().find(id);
+    if (it != stack.front().end())
+        it->second = value;
+    else
+        stack.front().insert(make_pair(id, value));
     // stack.front()[id] = value;
 }
 
