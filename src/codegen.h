@@ -35,6 +35,14 @@
 static llvm::LLVMContext MyContext;
 static llvm::IRBuilder<> builder{MyContext};
 
+/* type shorthands */
+static auto lint64 = llvm::Type::getInt64Ty(MyContext);
+static auto lvoid = llvm::Type::getVoidTy(MyContext);
+/* constant shorthands */
+static auto lzero = llvm::ConstantInt::get(lint64, llvm::APInt(64, 0));
+static auto lone = llvm::ConstantInt::get(lint64, llvm::APInt(64, 1));
+static auto lnull = llvm::Constant::getNullValue(lint64);
+
 class CodeGenBlock {
 public:
     llvm::BasicBlock *block;
@@ -49,11 +57,11 @@ public:
     llvm::Module *module;
     SymbolTable<llvm::Value> venv;
     SymbolTable<llvm::Type> tenv;
-    std::stack<std::tuple<llvm::BasicBlock *, llvm::BasicBlock *>> loopstk;
+    std::stack<std::tuple<llvm::BasicBlock *, llvm::BasicBlock *>> loopstk; // for break/continue
 
     CodeGenContext() {
         module = new llvm::Module("main", MyContext);
-        tenv.push(Symbol("int"), llvm::Type::getInt64Ty(MyContext));
+        tenv.push(Symbol("int"), lint64);
     }
 
     void generateCode(NExpr *root);
