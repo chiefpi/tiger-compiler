@@ -142,6 +142,8 @@ public:
 
 class NType : public Node
 {
+public:
+	virtual llvm::Type *typeGen(CodeGenContext &context) { return nullptr; };
 };
 
 class NFieldTypeList : public Node
@@ -536,6 +538,7 @@ public:
 		this->index = index;
 	}
 	virtual llvm::Value *codeGen(CodeGenContext &context);
+	virtual llvm::Type *typeGen(CodeGenContext &context);
 	virtual void print(int depth) const;
 	virtual Type *traverse(Semant *analyzer);
 };
@@ -552,6 +555,7 @@ public:
 		this->index = index;
 	}
 	virtual llvm::Value *codeGen(CodeGenContext &context);
+	virtual llvm::Type *typeGen(CodeGenContext &context);
 	virtual void print(int depth) const;
 	virtual Type *traverse(Semant *analyzer);
 };
@@ -568,6 +572,7 @@ public:
 		this->index = index;
 	}
 	virtual llvm::Value *codeGen(CodeGenContext &context);
+	virtual llvm::Type *typeGen(CodeGenContext &context);
 	virtual void print(int depth) const;
 	virtual Type *traverse(Semant *analyzer);
 };

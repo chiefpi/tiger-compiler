@@ -7,7 +7,6 @@ using namespace std;
 extern int yyparse();
 // extern NExpr* root;
 
-
 llvm::Function* createPrintFunction(CodeGenContext& context)
 {
     std::vector<llvm::Type*> printf_arg_types;
@@ -18,7 +17,7 @@ llvm::Function* createPrintFunction(CodeGenContext& context)
 
     llvm::Function *func = llvm::Function::Create(
         printf_type, llvm::Function::ExternalLinkage,
-        llvm::Twine("print"),
+        llvm::Twine("printf"),
         context.module);
     func->setCallingConv(llvm::CallingConv::C);
     return func;
@@ -70,7 +69,3 @@ llvm::Function* createPrintFunction(CodeGenContext& context)
 // 	context.popBlock();
 // }
 
-void createCoreFunctions(CodeGenContext& context){
-	createPrintFunction(context);
-    // createEchoFunction(context, printfFn);
-}

@@ -22,7 +22,6 @@ int main(int argc, char **argv)
 	llvm::InitializeNativeTargetAsmPrinter();
 	llvm::InitializeNativeTargetAsmParser();
 	CodeGenContext context;
-	createCoreFunctions(context);
 	context.generateCode(root);
 	context.runCode();
 
