@@ -14,17 +14,17 @@ int main(int argc, char **argv)
 {
 	yyparse();
 	root->print(0);
-	Semant analyzer = Semant();
-	// root->traverse(&analyzer);
-	cout << root << endl;
+	Semant *analyzer = new Semant();
+	root->traverse(analyzer);
+	// cout << root << endl;
 	// see http://comments.gmane.org/gmane.comp.compilers.llvm.devel/33877
-	llvm::InitializeNativeTarget();
-	llvm::InitializeNativeTargetAsmPrinter();
-	llvm::InitializeNativeTargetAsmParser();
-	CodeGenContext context;
-	// createCoreFunctions(context);
-	context.generateCode(root);
-	context.runCode();
+	// llvm::InitializeNativeTarget();
+	// llvm::InitializeNativeTargetAsmPrinter();
+	// llvm::InitializeNativeTargetAsmParser();
+	// CodeGenContext context;
+	// // createCoreFunctions(context);
+	// context.generateCode(root);
+	// context.runCode();
 
 	return 0;
 }

@@ -19,13 +19,16 @@ tokens.cpp: mylexer.l myparser.hpp
 	lex -o $@ $^
 
 %.o: %.cpp
-	g++ -c $(CPPFLAGS) -o $@ $<
+	g++ -g -c $(CPPFLAGS) -o $@ $<
 
 codegen.o: codegen.cpp
-	g++ -D _DEBUG -c $(CPPFLAGS) -o $@ $<
+	g++ -g -D _DEBUG -c $(CPPFLAGS) -o $@ $<
 
 # myparser: main.cpp myparser.cpp tokens.cpp node.cpp semant.cpp type.cpp codegen.cpp
 # 	g++ -g -o $@ `llvm-config --libs --cppflags --ldflags` $^
 
 myparser: $(OBJS)
-	g++ -o $@ $(OBJS) $(LIBS) $(LDFLAGS)
+	g++ -g -o $@ $(OBJS) $(LIBS) $(LDFLAGS)
+
+test:
+	./myparser < ../test/Official/Good/test1.tig

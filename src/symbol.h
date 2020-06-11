@@ -21,10 +21,10 @@ public:
         // cout << "node" << printCount++ << "["
         //      << "label = \""<< id <<"\"];" << endl;
         for (int i = 0; i < depth; i++)
-            cout << " ";
+            cout << "  ";
         cout << "<id>" << endl;
         for (int i = 0; i < depth + 1; i++)
-            cout << " ";
+            cout << "  ";
         cout << id << endl;
     }
     bool operator==(const Symbol &other) const

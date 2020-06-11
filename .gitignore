@@ -1,6 +1,7 @@
 .vscode
 *.o
 *.txt
+*.ast
 Makefile.old
 myparser.cpp
 myparser.hpp

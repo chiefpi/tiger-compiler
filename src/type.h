@@ -7,7 +7,7 @@ class Type
 public:
     enum TypeKind
     {
-        TInt,
+        TInt = 0,
         TString,
         TRecord,
         TArray,
@@ -19,7 +19,7 @@ public:
     bool noAssign;
     Type() {}
     Type(TypeKind type) : type(type){};
-    Type(const Type &obj) { type = obj.type; }
+    //Type(const Type &obj) { type = obj.type; }
     bool CoerceTo(Type *t)
     {
         return false; // TODO: check coerce
@@ -30,10 +30,12 @@ class ArrayType : public Type
 {
 public:
     Type *elementType;
-    ArrayType(Type *et) : elementType(et) { type = TArray; }
+    ArrayType(Type *et)
+    {
+        elementType = et;
+        type = TArray;
+    }
 };
-
-bool checkTypeEquiv(Type *a, Type *b);
 
 class RecordType : public Type
 {
@@ -42,9 +44,9 @@ public:
     vector<Field> fieldList;
 
     RecordType(const vector<Field> &fields) : fieldList(fields) { type = TRecord; }
-    bool isSame(RecordType *rt);
-    bool checkField(vector<Type *> pts);
-    bool findSymbol(Symbol *sym);
+    // bool isSame(RecordType *rt);
+    // bool checkField(vector<Type *> pts);
+    Type *findSymbolType(Symbol *sym);
 };
 
 class NameType : public Type
