@@ -29,10 +29,6 @@
 #include "env.h"
 #include "node.h"
 
-/* standard library */
-class CodeGenContext;
-llvm::Function* createPrintFunction(CodeGenContext& context);
-
 static llvm::LLVMContext MyContext;
 static llvm::IRBuilder<> builder{MyContext};
 
