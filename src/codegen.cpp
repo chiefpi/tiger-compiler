@@ -1,13 +1,20 @@
-#include "node.h"
 #include "codegen.h"
 #include "myparser.hpp"
 
+/* Built-in symbol bindings */
+void CodeGenContext::initEnv() {
+    venv.push(Symbol("print"), createPrintFunction(*this));
+    tenv.push(Symbol("int"), lint64);
+    tenv.push(Symbol("string"), lpint8);
+}
 
 /* Compile the AST into a module */
 void CodeGenContext::generateCode(NExpr *root) {
 #ifdef _DEBUG
     std::cout << "Generating code..." << std::endl;
 #endif
+    initEnv();
+
     /* Create the top level interpreter function to call as entry */
     std::vector<llvm::Type *> argTypes;
     llvm::FunctionType *ftype = llvm::FunctionType::get(llvm::Type::getVoidTy(MyContext), llvm::makeArrayRef(argTypes), false);
@@ -56,17 +63,6 @@ llvm::GenericValue CodeGenContext::runCode() {
     std::cout << "Code was run." << std::endl;
 #endif
     return v;
-}
-
-/* Type to llvm::Type */
-llvm::Type *CodeGenContext::castType(Type *type) {
-    llvm::Type *ltype = nullptr;
-    switch(type->type) {
-        case Type::TInt: ltype = lint64; break;
-        case Type::TString: ltype = nullptr; break;
-        case Type::TNil: ltype = nullptr; break;
-    }
-    return ltype;
 }
 
 llvm::Function *CodeGenContext::createIntrinsicFunction(
@@ -228,8 +224,8 @@ llvm::Value *NArrayExpr::codeGen(CodeGenContext &context) { // TODO: init
 #endif
     auto init = initValue->codeGen(context);
     auto asize = size->codeGen(context);
-    // auto etype = context.tenv.findAll(*type);
-    auto etype = lint64;
+    auto etype = context.tenv.findAll(*type);
+    // auto etype = lint64;
     auto esize = llvm::ConstantInt::get(lint64, llvm::APInt(64, context.module->getDataLayout().getTypeAllocSize(etype)));
     std::cout << "here" << std::endl;
     llvm::Value *aptr = builder.CreateCall(
@@ -258,7 +254,7 @@ llvm::Value *NArrayExpr::codeGen(CodeGenContext &context) { // TODO: init
 
     builder.SetInsertPoint(loopBlock);
     builder.CreateStore(init, builder.CreateGEP(etype, aptr, index)); // init
-    builder.CreateBr(nextBlock);
+    // builder.CreateBr(nextBlock);
     std::cout << "here\n";
 
     builder.SetInsertPoint(nextBlock);
@@ -277,7 +273,7 @@ llvm::Value *NCallExpr::codeGen(CodeGenContext &context) {
     std::cout << "Creating function call: " << func->id << std::endl;
 #endif
     // llvm::Function *function = context.module->getFunction(func->id);
-    llvm::Function *function = (llvm::Function *)context.venv.findAll(*func);
+    auto function = llvm::cast<llvm::Function *>(context.venv.findAll(*func));
 
     std::vector<llvm::Value *> fargs;
     for (NExprList *it = args; it != nullptr; it = it->next)
@@ -528,12 +524,7 @@ llvm::Type *NNameType::typeGen(CodeGenContext &context) {
 #ifdef _DEBUG
     std::cout << "Fetching name type: " << id->id << std::endl;
 #endif
-    auto res = context.tenv.findAll(*id);
-    if (res == lint64)
-        std::cout << "lint" << std::endl;
-    else if (!res)
-        std::cout << "blow" << std::endl;
-    return res;
+    return context.tenv.findAll(*id);
 }
 
 llvm::Value *NSimpleVar::codeGen(CodeGenContext &context) {

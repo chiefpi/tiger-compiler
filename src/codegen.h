@@ -27,23 +27,25 @@
 #include <llvm/ExecutionEngine/GenericValue.h>
 
 #include "env.h"
-#include "type.h"
 #include "node.h"
 
 /* standard library */
+class CodeGenContext;
 llvm::Function* createPrintFunction(CodeGenContext& context);
 
 static llvm::LLVMContext MyContext;
 static llvm::IRBuilder<> builder{MyContext};
 
 /* type shorthands */
-static llvm::Type *lint64 = llvm::Type::getInt64Ty(MyContext);
-static llvm::Type *lpint8 = llvm::Type::getInt8PtrTy(MyContext);
-static llvm::Type *lvoid = llvm::Type::getVoidTy(MyContext);
+static llvm::Type *const lint64 = llvm::Type::getInt64Ty(MyContext);
+static llvm::Type *const lpint8 = llvm::Type::getInt8PtrTy(MyContext);
+// llvm::PointerType::getUnqual(llvm::Type::getInt8Ty(context));
+static llvm::Type *const lvoid = llvm::Type::getVoidTy(MyContext);
+
 /* constant shorthands */
-static llvm::Value *lzero = llvm::ConstantInt::get(lint64, llvm::APInt(64, 0));
-static llvm::Value *lone = llvm::ConstantInt::get(lint64, llvm::APInt(64, 1));
-static llvm::Value *lnull = llvm::Constant::getNullValue(lint64);
+static llvm::Value *const lzero = llvm::ConstantInt::get(lint64, llvm::APInt(64, 0));
+static llvm::Value *const lone = llvm::ConstantInt::get(lint64, llvm::APInt(64, 1));
+static llvm::Value *const lnull = llvm::Constant::getNullValue(lint64);
 
 class CodeGenBlock {
 public:
@@ -63,16 +65,12 @@ public:
 
     CodeGenContext() {
         module = new llvm::Module("main", MyContext);
-        /* built-in symbol bindings */
-        venv.push(Symbol("print"), createPrintFunction(*this));
-        tenv.push(Symbol("int"), lint64);
-        tenv.push(Symbol("string"), lpint8);
     }
 
+    void initEnv();
     void generateCode(NExpr *root);
     llvm::GenericValue runCode();
 
-    llvm::Type *castType(Type *type);
     llvm::Function *createIntrinsicFunction(
         const std::string &name,
         const std::vector<llvm::Type *> &args,
