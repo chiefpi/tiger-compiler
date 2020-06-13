@@ -39,7 +39,7 @@ void CodeGenContext::generateCode(NExpr *root) {
     /* Push a new variable/block context */
     pushBlock(bblock);
     root->codeGen(*this); /* emit bytecode for the toplevel block */
-    builder.CreateRet(lzero);
+    builder.CreateRet(nullptr);
     popBlock();
 
 #ifdef _DEBUG
@@ -231,8 +231,10 @@ llvm::Value *NArrayExpr::codeGen(CodeGenContext &context) {
 #ifdef _DEBUG
     std::cout << "Creating array" << std::endl;
 #endif
+    context.pushBlock(builder.GetInsertBlock());
     auto init = initValue->codeGen(context);
     auto asize = size->codeGen(context);
+    context.popBlock();
     auto atype = context.tenv.findAll(*type);
     auto etype = llvm::cast<llvm::PointerType>(atype)->getElementType();
     auto esize = llvm::ConstantInt::get(lint64, llvm::APInt(64, context.module->getDataLayout().getTypeAllocSize(etype)));
@@ -285,7 +287,7 @@ llvm::Value *NCallExpr::codeGen(CodeGenContext &context) {
 
     std::vector<llvm::Value *> fargs;
     for (NExprList *it = args; it != nullptr; it = it->next)
-        fargs.push_back((*it).codeGen(context));
+        fargs.push_back(it->head->codeGen(context));
 
     return builder.CreateCall(function, llvm::makeArrayRef(fargs));
 }
@@ -294,10 +296,6 @@ llvm::Value *NSeqExpr::codeGen(CodeGenContext &context) {
 #ifdef _DEBUG
     std::cout << "Creating sequence" << std::endl;
 #endif
-    // llvm::Value *last = nullptr;
-    // for (NExprList *it = exprs; it != nullptr; it = it->next)
-    //     last = it->head->codeGen(context);
-
     return exprs->codeGen(context);
 }
 
@@ -447,45 +445,60 @@ llvm::Value *NLetExpr::codeGen(CodeGenContext &context) {
 
 llvm::Value *NFuncDecl::codeGen(CodeGenContext &context) {
 #ifdef _DEBUG
-    std::cout << "Creating function: " << id->id << std::endl;
+    std::cout << "Creating function declaration: " << id->id << std::endl;
 #endif
-    std::vector<llvm::Type *> argTypes;
+    std::vector<llvm::Type *> ptypes;
     for (NFieldTypeList *it = params; it != nullptr; it = it->next)
-        argTypes.push_back(context.tenv.findAll(*(it->type)));
+        ptypes.push_back(context.tenv.findAll(*(it->type)));
 
-    llvm::Type *rtype = lvoid;
+    auto rtype = lvoid;
     if (retType)
         rtype = retType->typeGen(context);
 
-    llvm::FunctionType *ftype = llvm::FunctionType::get(rtype, llvm::makeArrayRef(argTypes), false);
-    llvm::Function *function = llvm::Function::Create(ftype, llvm::GlobalValue::InternalLinkage, (id->id).c_str(), context.module);
-    llvm::BasicBlock *bblock = llvm::BasicBlock::Create(MyContext, "entry", function, 0);
+    /* prototyping */
+    auto ftype = llvm::FunctionType::get(rtype, llvm::makeArrayRef(ptypes), false);
+    auto function = llvm::Function::Create(ftype, llvm::GlobalValue::InternalLinkage, (id->id).c_str(), context.module);
 
+    context.venv.push(*id, function);
+
+    auto oblock = builder.GetInsertBlock();
+    auto bblock = llvm::BasicBlock::Create(MyContext, "entry", function, 0);
+    builder.SetInsertPoint(bblock);
+
+    /* function scope */
     context.pushBlock(bblock);
     context.tenv.enterScope();
     context.venv.enterScope();
 
-    llvm::Function::arg_iterator argsValues = function->arg_begin();
-    llvm::Value* argumentValue;
+    /* parameter naming */
+    llvm::Function::arg_iterator argit = function->arg_begin();
+    for (NFieldTypeList *it = params; it != nullptr; it = it->next) {
+        llvm::Value *argv = &*argit++;
+        argv->setName((it->id->id).c_str());
+        /* arg to var, may be optional */
+        auto var = builder.CreateAlloca(argv->getType(), nullptr, (it->id->id).c_str());
+        builder.CreateStore(argv, var);
+        context.venv.push(*(it->id), var);
+    }
 
-    // for (NFieldTypeList *it = params; it != nullptr; it = it->next) {
-    //     it->codeGen(context);
-    //     argumentValue = &*argsValues++;
-    //     argumentValue->setName(it->id->id);
-    //     llvm::StoreInst *inst = new llvm::StoreInst(argumentValue, context.venv.findAll(*(it->id)), false, bblock);
-    // }
-    params->codeGen(context);
-    body->codeGen(context);
-    llvm::ReturnInst::Create(MyContext, context.getCurrentReturnValue(), bblock);
+    auto ret = body->codeGen(context);
+    if (!retType)
+        ret = nullptr;
+    builder.CreateRet(ret);
 
     context.venv.quitScope();
     context.tenv.quitScope();
     context.popBlock();
 
-    // if (next)
-    //     return next->codeGen(context);
+    builder.SetInsertPoint(oblock);
 
-    return function;
+    /* assume checked semantics,
+     * or add another scope for function batch,
+     * and pop them to the parent scope in the end*/
+    if (next)
+        next->codeGen(context);
+
+    return lnull;
 }
 
 llvm::Value *NTypeDecl::codeGen(CodeGenContext &context) {
@@ -493,7 +506,7 @@ llvm::Value *NTypeDecl::codeGen(CodeGenContext &context) {
     std::cout << "Creating type declaration: " << id->id << std::endl;
 #endif
     context.tenv.push(*id, type->typeGen(context));
-    if (next)
+    if (next) // assume checked semantics
         next->codeGen(context);
 
     return lnull;
@@ -510,9 +523,8 @@ llvm::Value *NVarDecl::codeGen(CodeGenContext &context) {
     else
         vtype = type->typeGen(context);
     auto alloc = builder.CreateAlloca(vtype, nullptr, id->id.c_str());
-    if (initValue != nullptr)
-        builder.CreateStore(init, alloc);
-        
+    builder.CreateStore(init, alloc);
+
     context.venv.push(*id, alloc);
 
     return alloc;
@@ -522,7 +534,7 @@ llvm::Value *NArrayType::codeGen(CodeGenContext &context) {}
 
 llvm::Type *NArrayType::typeGen(CodeGenContext &context) {
 #ifdef _DEBUG
-    std::cout << "Fetching array type: " << id->id << std::endl;
+    std::cout << "Fetching array type: array of " << id->id << std::endl;
 #endif
     return llvm::PointerType::getUnqual(context.tenv.findAll(*id));
 }
