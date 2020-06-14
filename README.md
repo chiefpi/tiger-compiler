@@ -31,6 +31,15 @@ An alternative way to test the program on `queens.tig` (the program of the Eight
 make test
 ```
 
+If only the AST is needed:
+```
+./parser -v < [path_to_test_program]
+```
+
+If only the IR is needed:
+```
+./parser -i < [path_to_test_program]
+```
 
 ## Duty Assignment
 - Lexer, Parser: Zhang Yisu

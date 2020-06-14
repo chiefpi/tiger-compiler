@@ -1,6 +1,6 @@
 all: myparser
 
-OBJS = main.o myparser.o tokens.o node.o semant.o type.o codegen.o corefn.o
+OBJS = main.o myparser.o tokens.o print.o traverse.o semant.o type.o codegen.o corefn.o
 
 LLVMCONFIG = llvm-config
 CPPFLAGS = `$(LLVMCONFIG) --cppflags` -std=c++11
