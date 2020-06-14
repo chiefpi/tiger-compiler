@@ -26,7 +26,7 @@ e.g.
 ./parser < ../test/test1.tig
 ```
 
-An alternative way to test the program on `queens.tig` (the program of the Eight Queen Problem):
+An alternative way to test the program on `queens.tig` (the program of the Eight Queens Problem):
 ```
 make test
 ```

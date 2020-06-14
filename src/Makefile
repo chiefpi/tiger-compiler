@@ -31,4 +31,4 @@ myparser: $(OBJS)
 	g++ -g -o $@ $(OBJS) $(LIBS) $(LDFLAGS)
 
 test:
-	./myparser < ../test/Official/Good/test1.tig
+	./myparser < ../test/Good/queens.tig
