@@ -26,7 +26,7 @@
 #include <llvm/ExecutionEngine/MCJIT.h>
 #include <llvm/ExecutionEngine/GenericValue.h>
 
-#include "env.h"
+#include "symbolTable.h"
 #include "node.h"
 
 static llvm::LLVMContext MyContext;

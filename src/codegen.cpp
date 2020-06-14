@@ -432,14 +432,14 @@ llvm::Value *NLetExpr::codeGen(CodeGenContext &context) {
 #ifdef _DEBUG
     std::cout << "Creating let" << std::endl;
 #endif
-    context.tenv.enterScope();
-    context.venv.enterScope();
+    // context.tenv.enterScope();
+    // context.venv.enterScope();
     // for (auto &dec = decls; dec != nullptr; dec = dec->next)
     //     dec->head->codeGen(context);
     decls->codeGen(context);
     auto result = body->codeGen(context);
-    context.venv.quitScope();
-    context.tenv.quitScope();
+    // context.venv.quitScope();
+    // context.tenv.quitScope();
     return result;
 }
 
@@ -522,9 +522,18 @@ llvm::Value *NVarDecl::codeGen(CodeGenContext &context) {
         vtype = init->getType(); // type derivation
     else
         vtype = type->typeGen(context);
-    auto alloc = builder.CreateAlloca(vtype, nullptr, id->id.c_str());
-    builder.CreateStore(init, alloc);
 
+    llvm::Value *alloc;
+    if (context.venv.countScopes() == 1) { // let
+        auto gvp = new llvm::GlobalVariable(
+            *(context.module), vtype, false, llvm::GlobalValue::CommonLinkage, 0, id->id.c_str());
+        auto cptr = llvm::ConstantPointerNull::get(llvm::PointerType::getUnqual(vtype));
+        gvp->setInitializer(cptr);
+        alloc = gvp;
+    }
+    else
+        alloc = builder.CreateAlloca(vtype, nullptr, id->id.c_str());
+    builder.CreateStore(init, alloc);
     context.venv.push(*id, alloc);
 
     return alloc;

@@ -22,6 +22,7 @@ public:
     void enterScope();
     void quitScope();
     void resetScope();
+    size_t countScopes();
 
 protected:
     deque<TableType> stack;
@@ -98,4 +99,10 @@ void SymbolTable<T>::resetScope()
 {
     stack.clear();
     enterScope();
+}
+
+template <typename T>
+size_t SymbolTable<T>::countScopes()
+{
+    return stack.size();
 }
