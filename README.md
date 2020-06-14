@@ -40,8 +40,3 @@ If only the IR is needed:
 ```
 ./parser -i < [path_to_test_program]
 ```
-
-## Duty Assignment
-- Lexer, Parser: Zhang Yisu
-- AST, Semantic Analyzer: Wang Yanhao
-- Code Generation: Pan Qifan
