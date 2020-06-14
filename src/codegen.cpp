@@ -6,16 +6,16 @@ void CodeGenContext::initEnv() {
     /* external functions */
     venv.push(Symbol("print"), createIntrinsicFunction("print", {lpint8}, lvoid));
     venv.push(Symbol("printi"), createIntrinsicFunction("printi", {lint64}, lvoid));
-    venv.push(Symbol("allocaArray"), createIntrinsicFunction("allocaArray", {lint64, lint64}, lpint8));
-    // venv.push(Symbol("flush"), createIntrinsicFunction("flush", {lint64}, lvoid));
-    // venv.push(Symbol("getchar"), createIntrinsicFunction("getchar", {lint64}, lvoid));
-    // venv.push(Symbol("ord"), createIntrinsicFunction("ord", {lint64}, lvoid));
-    // venv.push(Symbol("chr"), createIntrinsicFunction("chr", {lint64}, lvoid));
-    // venv.push(Symbol("size"), createIntrinsicFunction("size", {lint64}, lvoid));
-    // venv.push(Symbol("substring"), createIntrinsicFunction("substring", {lint64}, lvoid));
-    // venv.push(Symbol("concat"), createIntrinsicFunction("concat", {lint64}, lvoid));
-    // venv.push(Symbol("not"), createIntrinsicFunction("not", {lint64}, lvoid));
-    // venv.push(Symbol("exit"), createIntrinsicFunction("exit", {lint64}, lvoid));
+    venv.push(Symbol("allocate"), createIntrinsicFunction("allocate", {lint64, lint64}, lpint8));
+    venv.push(Symbol("flush"), createIntrinsicFunction("flush", {}, lvoid));
+    venv.push(Symbol("getchar"), createIntrinsicFunction("getch", {}, lpint8));
+    venv.push(Symbol("ord"), createIntrinsicFunction("ord", {lpint8}, lint64));
+    venv.push(Symbol("chr"), createIntrinsicFunction("chr", {lint64}, lpint8));
+    venv.push(Symbol("size"), createIntrinsicFunction("size", {lpint8}, lint64));
+    venv.push(Symbol("substring"), createIntrinsicFunction("substring", {lpint8, lpint8, lint64}, lpint8));
+    venv.push(Symbol("concat"), createIntrinsicFunction("concat", {lpint8, lpint8}, lpint8));
+    venv.push(Symbol("not"), createIntrinsicFunction("neg", {lint64}, lint64));
+    venv.push(Symbol("exit"), createIntrinsicFunction("exit", {lint64}, lvoid));
     /* predefined types */
     tenv.push(Symbol("int"), lint64);
     tenv.push(Symbol("string"), lpint8);
@@ -129,7 +129,7 @@ llvm::Value *NFieldTypeList::codeGen(CodeGenContext &context) {
     return lnull;
 }
 
-llvm::Value *NFieldExprList::codeGen(CodeGenContext &context) { // TODO: field expr
+llvm::Value *NFieldExprList::codeGen(CodeGenContext &context) {
 #ifdef _DEBUG
     std::cout << "Creating field expr list" << std::endl;
 #endif
@@ -149,7 +149,7 @@ llvm::Value *NIntExpr::codeGen(CodeGenContext &context) {
     return llvm::ConstantInt::get(lint64, value, true);
 }
 
-llvm::Value *NNilExpr::codeGen(CodeGenContext &context) { // TODO: verify null pointer
+llvm::Value *NNilExpr::codeGen(CodeGenContext &context) { // TODO: test
 #ifdef _DEBUG
     std::cout << "Creating nil" << std::endl;
 #endif
@@ -163,7 +163,7 @@ llvm::Value *NVarExpr::codeGen(CodeGenContext &context) {
     return builder.CreateLoad(var->codeGen(context));
 }
 
-llvm::Value *NOpExpr::codeGen(CodeGenContext &context) { // TODO: builder api
+llvm::Value *NOpExpr::codeGen(CodeGenContext &context) { // TODO: use builder api
 #ifdef _DEBUG
     std::cout << "Creating binary operation: " << op << std::endl;
 #endif
@@ -189,7 +189,7 @@ math:
     return llvm::BinaryOperator::Create(minst, lhs->codeGen(context), 
         rhs->codeGen(context), "", context.currentBlock());
 cmp:
-    return new llvm::ZExtInst( // compare and cast
+    return new llvm::ZExtInst( // compare and extend to lint64
         new llvm::ICmpInst(*context.currentBlock(), cinst, lhs->codeGen(context), rhs->codeGen(context), ""),
         llvm::IntegerType::get(MyContext, 64), "", context.currentBlock());
 }
@@ -201,30 +201,31 @@ llvm::Value *NAssignExpr::codeGen(CodeGenContext &context) {
     return builder.CreateStore(rhs->codeGen(context), var->codeGen(context));
 }
 
-llvm::Value *NRecordExpr::codeGen(CodeGenContext &context) { // TODO: test
+llvm::Value *NRecordExpr::codeGen(CodeGenContext &context) {
 #ifdef _DEBUG
     std::cout << "Creating record" << std::endl;
 #endif
     auto rtype = context.tenv.findAll(*type);
     auto etype = llvm::cast<llvm::PointerType>(rtype)->getElementType();
-    auto esize = context.module->getDataLayout().getTypeAllocSize(etype);
-    auto var = builder.CreateBitCast(
+    auto esize = llvm::ConstantInt::get(lint64, llvm::APInt(64, context.module->getDataLayout().getTypeAllocSize(etype)));
+    auto rptr = builder.CreateBitCast(
         builder.CreateCall(
-            context.createIntrinsicFunction("", {lint64, lint64}, lpint8),
-            llvm::ConstantInt::get(lint64, llvm::APInt(64, esize))),
+            context.venv.findAll(Symbol("allocate")),
+            std::vector<llvm::Value *>{lone, esize}),
         rtype);
 
     size_t idx = 0;
     for (NFieldExprList *it = fields; it != nullptr; it = it->next) {
-        auto exp = it->codeGen(context);
+        context.pushBlock(builder.GetInsertBlock());
+        auto init = it->initValue->codeGen(context);
+        context.popBlock();
         auto eptr = builder.CreateGEP(
-            context.tenv.findAll(*(it->id)),
-            var,
+            context.tenv.findAll(*(it->id)), rptr,
             llvm::ConstantInt::get(lint64, llvm::APInt(64, idx)));
-        builder.CreateStore(exp, eptr);
+        builder.CreateStore(init, eptr);
         ++idx;
     }
-    return var;
+    return rptr;
 }
 
 llvm::Value *NArrayExpr::codeGen(CodeGenContext &context) {
@@ -240,11 +241,9 @@ llvm::Value *NArrayExpr::codeGen(CodeGenContext &context) {
     auto esize = llvm::ConstantInt::get(lint64, llvm::APInt(64, context.module->getDataLayout().getTypeAllocSize(etype)));
     auto aptr = builder.CreateBitCast(
         builder.CreateCall(
-            // context.createIntrinsicFunction("allocaArray", {lint64, lint64}, lpint8),
-            context.venv.findAll(Symbol("allocaArray")),
+            context.venv.findAll(Symbol("allocate")),
             std::vector<llvm::Value *>{asize, esize}),
         atype);
-    // auto aptr = builder.CreateAlloca(llvm::ArrayType::get(etype, 10));
 
     /* initialize with a loop */
     llvm::Function *function = builder.GetInsertBlock()->getParent();
@@ -299,7 +298,7 @@ llvm::Value *NSeqExpr::codeGen(CodeGenContext &context) {
     return exprs->codeGen(context);
 }
 
-llvm::Value *NIfExpr::codeGen(CodeGenContext &context) { // TODO: verify
+llvm::Value *NIfExpr::codeGen(CodeGenContext &context) {
 #ifdef _DEBUG
     std::cout << "Creating if" << std::endl;
 #endif
@@ -554,7 +553,8 @@ llvm::Type *NRecordType::typeGen(CodeGenContext &context) {
 #ifdef _DEBUG
     std::cout << "Fetching record type" << std::endl;
 #endif
-    // return context
+    fields->codeGen(context);
+    return llvm::PointerType::getUnqual(context.tenv.findAll(*(fields->id))); // TODO
 }
 
 llvm::Value *NNameType::codeGen(CodeGenContext &context) {}
@@ -577,11 +577,9 @@ llvm::Value *NFieldVar::codeGen(CodeGenContext &context) {
 #ifdef _DEBUG
     std::cout << "Creating field variable: " << id->id << std::endl;
 #endif
-    // auto avar = var->codeGen(context);
-    // return builder.CreateGEP(
-    //     avar->getType(), // TODO
-    //     builder.CreateLoad(avar),
-    //     llvm::ConstantInt::get(lint64, llvm::APInt(64, id))); // TODO: id
+    // auto rptr = builder.CreateLoad(var->codeGen(context));
+    // auto etype = llvm::cast<llvm::PointerType>(rptr->getType())->getElementType();
+    // return builder.CreateGEP(rptr, etype, llvm::ConstantInt::get(lint64, llvm::APInt(64, id))); // TODO
 }
 
 llvm::Value *NSubscriptVar::codeGen(CodeGenContext &context) {

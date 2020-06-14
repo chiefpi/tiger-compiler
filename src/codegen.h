@@ -35,7 +35,6 @@ static llvm::IRBuilder<> builder{MyContext};
 /* type shorthands */
 static llvm::Type *const lint64 = llvm::Type::getInt64Ty(MyContext);
 static llvm::Type *const lpint8 = llvm::Type::getInt8PtrTy(MyContext);
-// llvm::PointerType::getUnqual(llvm::Type::getInt8Ty(context));
 static llvm::Type *const lvoid = llvm::Type::getVoidTy(MyContext);
 
 /* constant shorthands */
