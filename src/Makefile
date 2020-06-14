@@ -22,7 +22,7 @@ tokens.cpp: mylexer.l myparser.hpp
 	g++ -g -c $(CPPFLAGS) -o $@ $<
 
 codegen.o: codegen.cpp
-	g++ -g -D _DEBUG -c $(CPPFLAGS) -o $@ $<
+	g++ -g -c $(CPPFLAGS) -o $@ $<
 
 # myparser: main.cpp myparser.cpp tokens.cpp node.cpp semant.cpp type.cpp codegen.cpp
 # 	g++ -g -o $@ `llvm-config --libs --cppflags --ldflags` $^
