@@ -61,6 +61,11 @@ public:
     CodeGenContext() {
         module = new llvm::Module("main", MyContext);
     }
+    ~CodeGenContext() {
+        while (!blocks.empty())
+            popBlock();
+        delete module;
+    }
 
     void initEnv();
     void generateCode(NExpr *root);
