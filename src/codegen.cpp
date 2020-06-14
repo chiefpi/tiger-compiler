@@ -119,11 +119,11 @@ llvm::Value *NVarList::codeGen(CodeGenContext &context) {
     return last;
 }
 
-llvm::Value *NFieldTypeList::codeGen(CodeGenContext &context) {
+llvm::Value *NFieldTypeList::codeGen(CodeGenContext &context) { // not used
 #ifdef _DEBUG
     std::cout << "Creating field type list: " << id->id << ":" << type->id << std::endl;
 #endif
-    context.tenv.push(*id, context.tenv.findAll(*type));
+    context.tenv.push(*id, context.tenv.findAll(*type)); // wrong
     if (next)
         next->codeGen(context);
     return lnull;
@@ -163,7 +163,7 @@ llvm::Value *NVarExpr::codeGen(CodeGenContext &context) {
     return builder.CreateLoad(var->codeGen(context));
 }
 
-llvm::Value *NOpExpr::codeGen(CodeGenContext &context) { // TODO: use builder api
+llvm::Value *NOpExpr::codeGen(CodeGenContext &context) {
 #ifdef _DEBUG
     std::cout << "Creating binary operation: " << op << std::endl;
 #endif
@@ -187,11 +187,10 @@ llvm::Value *NOpExpr::codeGen(CodeGenContext &context) { // TODO: use builder ap
     return nullptr;
 math:
     return llvm::BinaryOperator::Create(minst, lhs->codeGen(context), 
-        rhs->codeGen(context), "", context.currentBlock());
+        rhs->codeGen(context), "", context.currentBlock()); // TODO: use builder api
 cmp:
-    return new llvm::ZExtInst( // compare and extend to lint64
-        new llvm::ICmpInst(*context.currentBlock(), cinst, lhs->codeGen(context), rhs->codeGen(context), ""),
-        llvm::IntegerType::get(MyContext, 64), "", context.currentBlock());
+    return builder.CreateZExt( // compare and extend to lint64
+        builder.CreateICmp(cinst, lhs->codeGen(context), rhs->codeGen(context)), lint64);
 }
 
 llvm::Value *NAssignExpr::codeGen(CodeGenContext &context) {
